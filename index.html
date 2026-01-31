@@ -35,31 +35,31 @@
 
         @property --color-1 {
             syntax: '<color>';
-            initial-value: #1a1200;
+            initial-value: #1E3A8A;
             inherits: false;
         }
 
         @property --color-2 {
             syntax: '<color>';
-            initial-value: #3d2700;
+            initial-value: #1E40AF;
             inherits: false;
         }
 
         @property --color-3 {
             syntax: '<color>';
-            initial-value: #8B6914;
+            initial-value: #2563EB;
             inherits: false;
         }
 
         @property --color-4 {
             syntax: '<color>';
-            initial-value: #C5A028;
+            initial-value: #3B82F6;
             inherits: false;
         }
 
         @property --color-5 {
             syntax: '<color>';
-            initial-value: #D4AF37;
+            initial-value: #60A5FA;
             inherits: false;
         }
 
@@ -71,13 +71,13 @@
 
         @property --border-color-1 {
             syntax: '<color>';
-            initial-value: hsla(45, 80%, 60%, 0.3);
+            initial-value: hsla(217, 91%, 60%, 0.3);
             inherits: true;
         }
 
         @property --border-color-2 {
             syntax: '<color>';
-            initial-value: hsla(45, 70%, 50%, 0.8);
+            initial-value: hsla(221, 83%, 53%, 0.8);
             inherits: true;
         }
 
@@ -112,45 +112,43 @@
         }
 
         :root {
-            /* Luxury Gold & Black Palette */
-            --gold: #D4AF37;
-            --gold-light: #FFD700;
-            --gold-dark: #C5A028;
-            --gold-metallic: #F4D03F;
-            --gold-rich: #B8860B;
-            --accent-gold: #DAA520;
+            /* Modern Blue & White Palette */
+            --primary: #2563EB;
+            --primary-light: #3B82F6;
+            --primary-dark: #1E40AF;
+            --secondary: #DBEAFE;
+            --accent-blue: #60A5FA;
             
-            /* Deep Blacks */
-            --bg-dark: #000000;
-            --bg-void: #050505;
-            --bg-rich-black: #0A0A0A;
-            --surface: rgba(10, 10, 10, 0.85);
-            --surface-light: rgba(20, 20, 20, 0.9);
-            --border: rgba(212, 175, 55, 0.15);
-            --border-hover: rgba(212, 175, 55, 0.35);
+            /* Clean Backgrounds */
+            --bg-light: #F8FAFC;
+            --bg-white: #FFFFFF;
+            --surface: #FFFFFF;
+            --surface-light: #F1F5F9;
+            --border: #E2E8F0;
+            --border-hover: #CBD5E1;
             
             /* Text */
-            --text-primary: rgba(255, 255, 255, 0.98);
-            --text-secondary: rgba(255, 255, 255, 0.7);
-            --text-tertiary: rgba(255, 255, 255, 0.45);
-            --text-gold: #D4AF37;
-            --text-gold-light: #F4D03F;
+            --text-primary: #1E293B;
+            --text-secondary: #64748B;
+            --text-tertiary: #94A3B8;
+            --text-blue: #2563EB;
+            --text-blue-light: #3B82F6;
             
             /* Card */
-            --card-bg: rgba(10, 10, 10, 0.95);
-            --card-border: rgba(212, 175, 55, 0.2);
+            --card-bg: #FFFFFF;
+            --card-border: #E2E8F0;
             
-            /* Shadows with Gold Glow */
-            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
-            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
-            --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.6);
-            --shadow-gold: 0 4px 20px rgba(212, 175, 55, 0.15);
-            --shadow-gold-lg: 0 8px 32px rgba(212, 175, 55, 0.25);
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --shadow-blue: 0 4px 20px rgba(37, 99, 235, 0.15);
+            --shadow-blue-lg: 0 8px 32px rgba(37, 99, 235, 0.2);
             
             /* Status Colors */
-            --success: #52C41A;
-            --error: #FF4D4F;
+            --success: #10B981;
+            --error: #EF4444;
         }
 
         * {
@@ -167,10 +165,10 @@
             color: var(--text-primary);
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            background: var(--bg-dark);
+            background: var(--bg-light);
         }
 
-        /* Luxury Dark Background */
+        /* Clean Light Background */
         .background-container {
             position: fixed;
             top: 0;
@@ -178,9 +176,9 @@
             width: 100%;
             height: 100%;
             z-index: -1;
-            background: radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 80%, rgba(197, 160, 40, 0.06) 0%, transparent 50%),
-                        var(--bg-void);
+            background: radial-gradient(circle at 20% 50%, rgba(37, 99, 235, 0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.04) 0%, transparent 50%),
+                        var(--bg-light);
         }
 
         .gradient-blob {
@@ -195,7 +193,7 @@
         .blob-1 {
             width: 650px;
             height: 650px;
-            background: radial-gradient(circle, var(--gold) 0%, transparent 70%);
+            background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
             top: -250px;
             left: -200px;
             animation-delay: 0s;
@@ -204,7 +202,7 @@
         .blob-2 {
             width: 550px;
             height: 550px;
-            background: radial-gradient(circle, var(--gold-rich) 0%, transparent 70%);
+            background: radial-gradient(circle, var(--accent-blue) 0%, transparent 70%);
             bottom: -200px;
             right: -150px;
             animation-delay: -15s;
@@ -240,14 +238,13 @@
         header h1 {
             font-size: 3rem;
             font-weight: 700;
-            background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 50%, var(--gold-rich) 100%);
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 50%, var(--primary-dark) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             margin-bottom: 12px;
             letter-spacing: -1.5px;
             line-height: 1.1;
-            text-shadow: 0 2px 20px rgba(212, 175, 55, 0.3);
         }
 
         header p {
@@ -260,9 +257,9 @@
         /* Glass Container Base */
         .glass-container {
             background: var(--surface);
-            backdrop-filter: blur(40px) saturate(180%);
-            -webkit-backdrop-filter: blur(40px) saturate(180%);
-            border-radius: 20px;
+            backdrop-filter: blur(10px) saturate(150%);
+            -webkit-backdrop-filter: blur(10px) saturate(150%);
+            border-radius: 16px;
             border: 1px solid var(--border);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -270,19 +267,19 @@
         /* Info Section */
         .info-section {
             background: var(--surface);
-            backdrop-filter: blur(40px) saturate(180%);
-            -webkit-backdrop-filter: blur(40px) saturate(180%);
-            border-radius: 20px;
+            backdrop-filter: blur(10px) saturate(150%);
+            -webkit-backdrop-filter: blur(10px) saturate(150%);
+            border-radius: 16px;
             border: 1px solid var(--border);
             padding: 32px;
             margin-bottom: 48px;
-            box-shadow: var(--shadow-sm), var(--shadow-gold);
+            box-shadow: var(--shadow-md);
         }
 
         .info-section h3 {
             font-size: 0.75rem;
             font-weight: 600;
-            color: var(--text-gold);
+            color: var(--text-blue);
             margin-bottom: 24px;
             text-transform: uppercase;
             letter-spacing: 1.5px;
@@ -295,20 +292,20 @@
         }
 
         .info-item {
-            background: rgba(212, 175, 55, 0.08);
+            background: var(--surface-light);
             backdrop-filter: blur(10px);
             border: 1px solid var(--border);
             padding: 24px 20px;
-            border-radius: 16px;
+            border-radius: 12px;
             text-align: center;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .info-item:hover {
-            background: rgba(212, 175, 55, 0.15);
-            border-color: var(--border-hover);
+            background: var(--secondary);
+            border-color: var(--primary);
             transform: translateY(-2px);
-            box-shadow: 0 4px 16px rgba(212, 175, 55, 0.2);
+            box-shadow: var(--shadow-blue);
         }
 
         .info-item h3 {
@@ -324,7 +321,7 @@
         .info-item p {
             font-size: 1.625rem;
             font-weight: 700;
-            background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 100%);
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -360,12 +357,12 @@
         .btn-primary {
             background: var(--primary);
             color: white;
-            box-shadow: 0 4px 12px rgba(10, 132, 255, 0.3);
+            box-shadow: var(--shadow-blue);
         }
 
         .btn-primary:hover {
             background: var(--primary-light);
-            box-shadow: 0 6px 20px rgba(10, 132, 255, 0.4);
+            box-shadow: var(--shadow-blue-lg);
             transform: translateY(-1px);
         }
 
@@ -373,19 +370,19 @@
             transform: translateY(0);
         }
 
-        /* Secondary Button - Dark Glass with Gold Accent */
+        /* Secondary Button - Light Glass with Blue Accent */
         .btn-secondary {
-            background: rgba(10, 10, 10, 0.7);
+            background: var(--surface);
             backdrop-filter: blur(20px);
-            color: var(--text-gold);
-            border: 1px solid var(--border);
+            color: var(--text-blue);
+            border: 1.5px solid var(--border);
         }
 
         .btn-secondary:hover {
-            background: rgba(212, 175, 55, 0.15);
-            border-color: var(--border-hover);
+            background: var(--secondary);
+            border-color: var(--primary);
             transform: translateY(-1px);
-            box-shadow: var(--shadow-gold);
+            box-shadow: var(--shadow-blue);
         }
 
         .btn-secondary:active {
@@ -396,12 +393,12 @@
         .btn-tertiary {
             background: transparent;
             color: var(--text-secondary);
-            border: 1px solid var(--border);
+            border: 1.5px solid var(--border);
         }
 
         .btn-tertiary:hover {
-            background: rgba(212, 175, 55, 0.08);
-            color: var(--text-gold);
+            background: var(--surface-light);
+            color: var(--text-blue);
             border-color: var(--border-hover);
         }
 
@@ -409,12 +406,12 @@
         .btn-success {
             background: var(--success);
             color: white;
-            box-shadow: 0 4px 12px rgba(48, 209, 88, 0.3);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
         }
 
         .btn-success:hover {
-            background: #32D65C;
-            box-shadow: 0 6px 20px rgba(48, 209, 88, 0.4);
+            background: #059669;
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
             transform: translateY(-1px);
         }
 
@@ -429,7 +426,7 @@
             font-size: 0.875rem;
         }
 
-        /* Liquid Gold Gradient Button */
+        /* Modern Blue Gradient Button */
         .gradient-button {
             position: relative;
             appearance: none;
@@ -439,7 +436,7 @@
             font-size: 1rem;
             line-height: 1.2;
             font-weight: 600;
-            color: #000000;
+            color: #FFFFFF;
             border: none;
             border-radius: 11px;
             display: inline-flex;
@@ -456,7 +453,7 @@
                 var(--color-4) var(--stop-4),
                 var(--color-5) var(--stop-5)
             );
-            box-shadow: var(--shadow-gold);
+            box-shadow: var(--shadow-blue);
             transition:
                 --pos-x 0.5s,
                 --pos-y 0.5s,
@@ -501,31 +498,31 @@
             --pos-y: 88%;
             --spread-x: 130%;
             --spread-y: 110%;
-            --color-1: #3d2700;
-            --color-2: #8B6914;
-            --color-3: #D4AF37;
-            --color-4: #FFD700;
-            --color-5: #F4D03F;
+            --color-1: #1E40AF;
+            --color-2: #2563EB;
+            --color-3: #3B82F6;
+            --color-4: #60A5FA;
+            --color-5: #93C5FD;
             --border-angle: 180deg;
-            --border-color-1: hsla(45, 85%, 70%, 0.4);
-            --border-color-2: hsla(45, 75%, 55%, 0.9);
+            --border-color-1: hsla(217, 85%, 70%, 0.4);
+            --border-color-2: hsla(221, 75%, 55%, 0.9);
             --stop-1: 0%;
             --stop-2: 12%;
             --stop-3: 35%;
             --stop-4: 68%;
             --stop-5: 88%;
-            box-shadow: var(--shadow-gold-lg);
+            box-shadow: var(--shadow-blue-lg);
         }
 
         .gradient-button-variant {
-            --color-1: #1a1200;
-            --color-2: #5d4a1f;
-            --color-3: #B8860B;
-            --color-4: #DAA520;
-            --color-5: #FFD700;
+            --color-1: #1E3A8A;
+            --color-2: #1D4ED8;
+            --color-3: #2563EB;
+            --color-4: #60A5FA;
+            --color-5: #93C5FD;
             --border-angle: 210deg;
-            --border-color-1: hsla(45, 90%, 65%, 0.5);
-            --border-color-2: hsla(45, 80%, 50%, 0.2);
+            --border-color-1: hsla(217, 90%, 65%, 0.5);
+            --border-color-2: hsla(221, 80%, 50%, 0.2);
         }
 
         .gradient-button-variant:hover {
@@ -533,19 +530,19 @@
             --pos-y: 92%;
             --spread-x: 125%;
             --spread-y: 115%;
-            --color-1: #2a1a00;
-            --color-2: #FFD700;
-            --color-3: #DAA520;
-            --color-4: #B8860B;
-            --color-5: #1a1200;
+            --color-1: #1E3A8A;
+            --color-2: #60A5FA;
+            --color-3: #3B82F6;
+            --color-4: #2563EB;
+            --color-5: #1E40AF;
             --stop-1: 0%;
             --stop-2: 15%;
             --stop-3: 40%;
             --stop-4: 70%;
             --stop-5: 92%;
             --border-angle: 220deg;
-            --border-color-1: hsla(45, 92%, 68%, 0.3);
-            --border-color-2: hsla(45, 85%, 58%, 0.85);
+            --border-color-1: hsla(217, 92%, 68%, 0.3);
+            --border-color-2: hsla(221, 85%, 58%, 0.85);
         }
 
         .gradient-button:disabled {
@@ -562,11 +559,11 @@
         /* Cards */
         .card {
             background: var(--card-bg);
-            backdrop-filter: blur(40px);
-            border-radius: 24px;
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
             padding: 40px;
             margin-bottom: 24px;
-            box-shadow: var(--shadow-lg), var(--shadow-gold);
+            box-shadow: var(--shadow-lg);
             border: 1px solid var(--card-border);
             display: none;
             color: var(--text-primary);
@@ -592,7 +589,7 @@
             margin-bottom: 32px;
             font-size: 1.75rem;
             font-weight: 700;
-            background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 100%);
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -609,7 +606,7 @@
             margin-bottom: 8px;
             font-weight: 600;
             font-size: 0.875rem;
-            color: var(--text-gold);
+            color: var(--text-primary);
             letter-spacing: -0.1px;
         }
 
@@ -617,19 +614,19 @@
             width: 100%;
             padding: 14px 16px;
             border: 1.5px solid var(--border);
-            border-radius: 12px;
+            border-radius: 10px;
             font-size: 0.9375rem;
             font-family: inherit;
             transition: all 0.2s ease;
-            background: rgba(10, 10, 10, 0.6);
+            background: var(--bg-white);
             color: var(--text-primary);
             line-height: 1.5;
         }
 
         textarea:focus, input:focus {
             outline: none;
-            border-color: var(--gold);
-            box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.15);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
         textarea::placeholder, input::placeholder {
@@ -642,20 +639,20 @@
         }
 
         .example-text {
-            background: rgba(212, 175, 55, 0.08);
+            background: var(--surface-light);
             padding: 12px 16px;
-            border-radius: 10px;
+            border-radius: 8px;
             margin-top: 12px;
             font-size: 0.8125rem;
-            color: var(--text-gold);
+            color: var(--text-blue);
             cursor: pointer;
             transition: all 0.2s ease;
             border: 1px solid var(--border);
         }
 
         .example-text:hover {
-            background: rgba(212, 175, 55, 0.15);
-            border-color: var(--border-hover);
+            background: var(--secondary);
+            border-color: var(--primary);
         }
 
         .button-group {
@@ -666,8 +663,8 @@
 
         /* Result Box */
         .result-box {
-            background: rgba(212, 175, 55, 0.05);
-            border-left: 3px solid var(--gold);
+            background: var(--surface-light);
+            border-left: 3px solid var(--primary);
             padding: 24px;
             border-radius: 12px;
             margin-top: 24px;
@@ -685,7 +682,7 @@
         }
 
         .result-box h3 {
-            color: var(--text-gold);
+            color: var(--text-primary);
             margin-bottom: 16px;
             font-size: 1.125rem;
             font-weight: 700;
@@ -693,19 +690,19 @@
         }
 
         .transaction-item {
-            background: rgba(10, 10, 10, 0.6);
+            background: var(--bg-white);
             padding: 16px 20px;
             margin: 12px 0;
-            border-radius: 12px;
+            border-radius: 10px;
             border: 1px solid var(--border);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow-sm);
             transition: all 0.2s ease;
         }
 
         .transaction-item:hover {
-            box-shadow: var(--shadow-gold);
+            box-shadow: var(--shadow-blue);
             transform: translateY(-1px);
-            border-color: var(--border-hover);
+            border-color: var(--primary);
         }
 
         .transaction-item h4 {
@@ -723,11 +720,11 @@
         }
 
         .success-message {
-            background: rgba(82, 196, 26, 0.12);
-            border: 1px solid rgba(82, 196, 26, 0.3);
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
             color: var(--text-primary);
             padding: 20px;
-            border-radius: 12px;
+            border-radius: 10px;
             margin-top: 20px;
         }
 
@@ -738,11 +735,11 @@
         }
 
         .error-message {
-            background: rgba(255, 77, 79, 0.12);
-            border: 1px solid rgba(255, 77, 79, 0.3);
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
             color: var(--text-primary);
             padding: 20px;
-            border-radius: 12px;
+            border-radius: 10px;
             margin-top: 20px;
         }
 
@@ -755,9 +752,9 @@
             display: inline-block;
             width: 18px;
             height: 18px;
-            border: 2.5px solid rgba(0, 0, 0, 0.2);
+            border: 2.5px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
-            border-top-color: #000000;
+            border-top-color: #FFFFFF;
             animation: spin 0.7s linear infinite;
         }
 
@@ -1004,7 +1001,7 @@
             const resultsDiv = document.getElementById('eventResults');
             
             let html = '<h3>Transaction Plan</h3>';
-            html += `<p style="margin-bottom: 16px; color: #6e6e73; font-size: 0.875rem;">${data.message}</p>`;
+            html += `<p style="margin-bottom: 16px; color: var(--text-secondary); font-size: 0.875rem;">${data.message}</p>`;
             
             data.plan.forEach(item => {
                 html += `
@@ -1053,7 +1050,7 @@
                         <div class="success-message">
                             <h3>Success</h3>
                             <p>${data.message}</p>
-                            <p style="margin-top: 8px; font-size: 0.875rem; color: #6e6e73;">
+                            <p style="margin-top: 8px; font-size: 0.875rem; color: var(--text-secondary);">
                                 Executed ${data.results.length} transaction(s) successfully.
                             </p>
                         </div>
@@ -1107,15 +1104,15 @@
             const resultsDiv = document.getElementById('suggestionResults');
             
             let html = '<h3>Smart Suggestion</h3>';
-            html += `<div style="background: white; padding: 18px 20px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.06);">`;
-            html += `<p style="font-size: 0.9375rem; line-height: 1.6; color: #1d1d1f;">${data.suggestion}</p>`;
+            html += `<div style="background: var(--bg-white); padding: 18px 20px; border-radius: 12px; border: 1px solid var(--border);">`;
+            html += `<p style="font-size: 0.9375rem; line-height: 1.6; color: var(--text-primary);">${data.suggestion}</p>`;
             html += `</div>`;
             
             if (data.recommended_account) {
                 const acc = data.recommended_account;
                 html += `
                     <div style="margin-top: 20px;">
-                        <h4 style="color: #1d1d1f; font-weight: 600; margin-bottom: 12px; font-size: 0.875rem;">Recommended Account</h4>
+                        <h4 style="color: var(--text-primary); font-weight: 600; margin-bottom: 12px; font-size: 0.875rem;">Recommended Account</h4>
                         <div class="transaction-item">
                             <h4>${acc.name}</h4>
                             <p>Gold: ${acc.balance.gold_gr} grams</p>
@@ -1136,7 +1133,7 @@
                 
                 const resultsDiv = document.getElementById('accountsResults');
                 
-                let html = '<h3 style="color: #1d1d1f; margin-bottom: 20px; font-weight: 700; font-size: 1rem; letter-spacing: -0.3px;">Collaborators</h3>';
+                let html = '<h3 style="color: var(--text-primary); margin-bottom: 20px; font-weight: 700; font-size: 1rem; letter-spacing: -0.3px;">Collaborators</h3>';
                 
                 const collaborators = data.accounts.filter(acc => acc.type === 'collaborator');
                 collaborators.forEach(acc => {
@@ -1150,7 +1147,7 @@
                     `;
                 });
                 
-                html += '<h3 style="color: #1d1d1f; margin: 32px 0 20px 0; font-weight: 700; font-size: 1rem; letter-spacing: -0.3px;">Customers</h3>';
+                html += '<h3 style="color: var(--text-primary); margin: 32px 0 20px 0; font-weight: 700; font-size: 1rem; letter-spacing: -0.3px;">Customers</h3>';
                 
                 const customers = data.accounts.filter(acc => acc.type === 'customer');
                 customers.forEach(acc => {
