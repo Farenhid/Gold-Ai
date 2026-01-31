@@ -300,7 +300,7 @@ adapter = MySystemAdapter(
 **Environment Variables**:
 ```bash
 OPENAI_API_KEY=sk-...        # Required for NLP
-OPENAI_MODEL=gpt-4o-mini     # Optional, default: gpt-4o-mini
+OPENAI_MODEL=gpt-5.2         # Optional, default: gpt-5.2
 ```
 
 **Future Configuration Options**:

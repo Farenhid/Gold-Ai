@@ -117,6 +117,18 @@ class SqlAlchemyAdapter(AccountingAdapter):
         finally:
             db.close()
 
+    def get_bank_accounts(self) -> List[Dict]:
+        """Return list of bank accounts (account_id, account_name) for context resolution."""
+        db = self._get_db()
+        try:
+            accounts = db.query(BankAccount).all()
+            return [
+                {"bank_account_id": a.account_id, "account_name": a.account_name}
+                for a in accounts
+            ]
+        finally:
+            db.close()
+
     def get_account_balance(self, account_id: str) -> Dict:
         """
         Returns the balance for a specific account.

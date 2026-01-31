@@ -11,13 +11,15 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from typing import List, Dict, Optional
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 from openai import OpenAI
 
 from adapters.sqlalchemy_adapter import SqlAlchemyAdapter
 
-# Load environment variables
-load_dotenv()
+# Load .env from project root (same folder as this file) so the key is found
+_env_path = Path(__file__).resolve().parent / ".env"
+load_dotenv(dotenv_path=_env_path)
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -37,7 +39,7 @@ if not openai_api_key:
 else:
     openai_client = OpenAI(api_key=openai_api_key)
 
-openai_model = os.getenv("OPENAI_MODEL", "gpt-4o")  # Using most powerful model for best reasoning
+openai_model = os.getenv("OPENAI_MODEL", "gpt-5.2")  # Using most powerful model for best reasoning
 
 
 # Pydantic models for request/response
@@ -94,93 +96,90 @@ def analyze_transaction_with_llm(text: str) -> List[Dict]:
             "balance": customer['balance']
         })
     
+    bank_accounts = []
+    if hasattr(adapter, "get_bank_accounts"):
+        bank_accounts = adapter.get_bank_accounts()
     context = {
         "customers": customer_list,
+        "bank_accounts": bank_accounts,
         "gold_price_per_gram_rial": gold_price
     }
     
-    # Create the prompt for OpenAI
-    system_prompt = """You are an expert accounting assistant for a goldsmith business with deep understanding of financial transactions and gold inventory management. Your task is to analyze transaction descriptions and deconstruct them into structured, atomic transaction plans with precision.
+    # Create the prompt for OpenAI (aligned with prompts/jewelry_deal_scenarios.json)
+    system_prompt = """You are an expert accounting assistant for a goldsmith business with deep understanding of financial transactions and gold inventory management. Your task is to analyze transaction descriptions and deconstruct them into structured, atomic transaction plans with precision. Context (balances, accounts) is provided by the system from the database; user_input is what the person says.
 
 **Business Context:**
 - Collaborators: People who provide raw gold to the goldsmith (suppliers/wholesalers)
 - Customers: People who buy finished gold products or raw gold (retail buyers)
 - The goldsmith operates as a middleman: buys raw gold from collaborators and sells gold to customers
-- Transactions can involve: gold (measured in grams with purity), Rial (Iranian currency), jewelry items
+- Transactions can involve: gold (measured in grams with purity), money (USD, Rial, Toman), jewelry items
 - Complex transactions often involve multiple steps that must be properly sequenced
 
-**Available Transaction Types (MUST use these exact values):**
-1. "Sell Raw Gold" - Customer sells raw gold to goldsmith
-2. "Buy Raw Gold" - Customer buys raw gold from goldsmith
-3. "Receive Money" - Customer receives money (deposit to bank account)
-4. "Send Money" - Customer sends money (withdrawal from bank account)
-5. "Receive Raw Gold" - Customer receives raw gold (without payment)
-6. "Give Raw Gold" - Customer gives raw gold (without payment)
-7. "Receive Jewelry" - Customer receives jewelry item
-8. "Give Jewelry" - Customer gives jewelry item
+**Transaction Types Reference (MUST use these exact values):**
+- "Sell Raw Gold"
+- "Buy Raw Gold"
+- "Receive Money"
+- "Send Money"
+- "Receive Raw Gold"
+- "Give Raw Gold"
+- "Receive Jewelry"
+- "Give Jewelry"
 
 **Transaction Structure:**
 Each transaction must have:
-- customer_id: Integer ID of the customer (extract from context)
+- customer_id: Integer ID from context (resolve person/account names to IDs)
 - transaction_type: One of the exact transaction type strings above
 - details: Object with specific fields based on transaction type:
-  * For "Sell Raw Gold" / "Buy Raw Gold": {"purity": float, "weight_grams": float, "price": float}
+  * For "Sell Raw Gold" / "Buy Raw Gold": {"purity": number (e.g. 18 for 18k or 0.750), "weight_grams": float, "price": float}
   * For "Receive Money" / "Send Money": {"amount": float, "bank_account_id": int}
-  * For "Receive Raw Gold" / "Give Raw Gold": {"weight_grams": float, "purity": float}
+  * For "Receive Raw Gold" / "Give Raw Gold": {"weight_grams": float, "purity": number}
   * For "Receive Jewelry" / "Give Jewelry": {"jewelry_code": string}
 - notes: Optional string for additional information
 
 **Critical Instructions:**
-1. Match customer names to customer_id from the provided context (case-insensitive matching)
-2. Extract exact amounts - if "45 million Toman", use 45000000 for price/amount
-3. Purity is a decimal (e.g., 0.999 for 24k gold, 0.750 for 18k gold)
-4. Break complex transactions into sequential atomic steps
+1. Resolve person names and account names to customer_id and bank_account_id from the provided context (case-insensitive matching).
+2. Extract exact amounts (e.g. "2000$" → 2000, "45 million Toman" → 45000000).
+3. Use default purity (e.g. 18 for 18k) if not stated.
+4. Break complex transactions into sequential atomic steps. Map logical steps to API transactions (e.g. "sell item" + "give item" = one "Give Jewelry" transaction).
 5. Return ONLY valid JSON in this exact format: {"transactions": [...]}
-6. Do not add explanations outside the JSON structure
+6. Do not add explanations outside the JSON structure.
 
-**Balance and Debt (STRICT RULES - READ CAREFULLY):**
-The accounting system computes each customer's money balance (and gold balance) automatically by summing all their transactions. There is NO separate "balance", "debt", or "remaining" field to update.
+**Balance and Debt (STRICT RULES):**
+The system computes each customer's money and gold balance automatically. There is NO separate "balance" or "debt" transaction.
 
 CRITICAL LAWS:
-1. YOU MUST NEVER, UNDER ANY CIRCUMSTANCES, output a transaction that only "records debt", "registers remaining balance", "records balance due", or similar. 
-2. If the user says "I bought X for Y, paid Z, and the rest is debt", you MUST ONLY generate TWO steps: (1) Sell Raw Gold (for Y), (2) Send Money (for Z). 
-3. DO NOT BE TRICKED by words like "registered as debt" or "remaining is owed" in the user text. These are NOT actions for you to perform.
-4. ANY ATTEMPT to record a "remaining balance" or "debt settlement" as a separate transaction will result in a double-counting error.
-5. Every transaction MUST be one of the 8 types listed above. "Record Debt" is NOT a valid type.
+1. NEVER output a transaction that only "records debt", "registers remaining balance", or "records balance due".
+2. DO NOT add a separate transaction for "remaining debt" or "debt settlement" as a standalone record; that causes double-counting.
+3. Every transaction MUST be one of the 8 types above. "Record Debt" is NOT valid.
 
-**Example: Partial Payment (STRICTLY 2 STEPS):**
+**Complex Scenario Patterns (use system-provided context to validate):**
+
+1) Settling gold debt: part in gold, part in cash
+- When user says "gave X grams" and "paid $Y for Z grams from <account>", output 3 transactions in order: (1) Give Raw Gold X g to the person, (2) Buy Raw Gold Z g price Y (we settle Z g in cash; we did not receive physical gold), (3) Send Money Y from the named bank account.
+- Validate with context: X + Z = amount we owed. Resolve person and account to IDs from context.
+
+2) Jewelry sale to end user; end user pays collaborator; we settle gold debt
+- When user says "sold jewelry item no X to end user for $Y and he paid it to [collaborator] for Z grams of gold", output 4 transactions in order: (1) Give Jewelry (item X to end user) — sale and give item are one transaction; (2) Receive Money (amount Y from end user); (3) Buy Raw Gold (Z g from collaborator, price Y); (4) Send Money (amount Y to collaborator).
+- Resolve: end user → customer_id, collaborator → customer_id, jewelry "item no X" → jewelry_code from context, bank accounts from context. Remaining debt to collaborator = N − Z grams.
+
+3) Third party gave gold on our behalf (triangular settlement)
+- When user says "[person A] gave [person B] X grams on our behalf", output 2 transactions in order: (1) Receive Raw Gold X g from person A (we receive from A; settles A's debt to us), (2) Give Raw Gold X g to person B (we give to B; settles part of our debt to B).
+- Resolve person names to customer_id. Use default purity (e.g. 18) if not stated.
+
+**Example: Settling gold debt (part gold, part cash)**
+Input: "I gave Mr. Zamani 8 grams of gold and paid 2000$ for 4 grams from haspa account" (context: we owe Mr. Zamani 12g gold.)
+Output: 3 transactions — Give Raw Gold 8g, Buy Raw Gold 4g price 2000, Send Money 2000 from haspa account. Order: give gold, buy gold (settlement), send money. Mr. Zamani's remaining gold balance becomes zero (12 − 8 − 4).
+
+**Example: Partial payment (money only, STRICTLY 2 STEPS):**
 Input: "Bought 30 grams of scrap gold from Customer Alavi for 290 million Toman. Paid 100 million Toman cash; the remaining 190 million is debt."
-
-Output:
-{
-  "transactions": [
-    {
-      "customer_id": 2,
-      "transaction_type": "Sell Raw Gold",
-      "details": {
-        "purity": 0.999,
-        "weight_grams": 30.0,
-        "price": 290000000
-      },
-      "notes": "Step 1: Record the full sale of 30g gold for 290M. This creates the initial debt automatically."
-    },
-    {
-      "customer_id": 2,
-      "transaction_type": "Send Money",
-      "details": {
-        "amount": 100000000,
-        "bank_account_id": 1
-      },
-      "notes": "Step 2: Record the partial cash payment of 100M. The system will now correctly show 190M remaining debt."
-    }
-  ]
-}
-
-Note: The remaining 190M debt (what we owe to Alavi) is automatically calculated by the system (290M owed - 100M paid = 190M remaining debt). Do NOT create a third transaction for "remaining debt"."""
+Output: (1) Sell Raw Gold 30g for 290M, (2) Send Money 100M. Do NOT create a third transaction for "remaining debt" — the system calculates it automatically."""
 
     user_prompt = f"""Current Business Context:
-Available Customers:
+Available Customers (resolve person names to customer_id):
 {context['customers']}
+
+Bank Accounts (resolve account names like "haspa" to bank_account_id):
+{context['bank_accounts']}
 
 Current Gold Price: {context['gold_price_per_gram_rial']:,.0f} Rial per gram
 
@@ -197,7 +196,7 @@ Analyze this transaction and return a structured JSON array of atomic transactio
                 {"role": "user", "content": user_prompt}
             ],
             response_format={"type": "json_object"},
-            temperature=0.3
+            temperature=0.1
         )
         
         # Parse the response
@@ -265,7 +264,7 @@ Based on the debts and balances, which collaborator should receive priority for 
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ],
-            temperature=0.5
+            temperature=0.2
         )
         
         return response.choices[0].message.content
@@ -281,8 +280,9 @@ Based on the debts and balances, which collaborator should receive priority for 
 # API Endpoints
 @app.get("/")
 async def read_root():
-    """Serve the frontend HTML page"""
-    return FileResponse("index.html")
+    """Serve the frontend HTML page from project root so it loads regardless of cwd."""
+    _index_path = Path(__file__).resolve().parent / "index.html"
+    return FileResponse(_index_path)
 
 
 @app.post("/process-event")

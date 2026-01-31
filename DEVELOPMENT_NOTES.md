@@ -60,7 +60,7 @@ The LLM can generate multi-step plans, but currently each transaction is indepen
 Required in `.env`:
 ```
 OPENAI_API_KEY=your-api-key-here
-OPENAI_MODEL=gpt-4o  # or gpt-4-turbo, gpt-3.5-turbo
+OPENAI_MODEL=gpt-5.2  # or gpt-4o, gpt-4-turbo, gpt-3.5-turbo
 DATABASE_URL=sqlite:///./gold_accounting.db  # or PostgreSQL URL
 ```
 
