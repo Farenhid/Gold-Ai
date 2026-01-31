@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Gold Accounting</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Custom Properties for Liquid Gold Animation */
+        @property --pos-x {
+            syntax: '<percentage>';
+            initial-value: 11.14%;
+            inherits: false;
+        }
+
+        @property --pos-y {
+            syntax: '<percentage>';
+            initial-value: 140%;
+            inherits: false;
+        }
+
+        @property --spread-x {
+            syntax: '<percentage>';
+            initial-value: 150%;
+            inherits: false;
+        }
+
+        @property --spread-y {
+            syntax: '<percentage>';
+            initial-value: 180.06%;
+            inherits: false;
+        }
+
+        @property --color-1 {
+            syntax: '<color>';
+            initial-value: #1a1200;
+            inherits: false;
+        }
+
+        @property --color-2 {
+            syntax: '<color>';
+            initial-value: #3d2700;
+            inherits: false;
+        }
+
+        @property --color-3 {
+            syntax: '<color>';
+            initial-value: #8B6914;
+            inherits: false;
+        }
+
+        @property --color-4 {
+            syntax: '<color>';
+            initial-value: #C5A028;
+            inherits: false;
+        }
+
+        @property --color-5 {
+            syntax: '<color>';
+            initial-value: #D4AF37;
+            inherits: false;
+        }
+
+        @property --border-angle {
+            syntax: '<angle>';
+            initial-value: 20deg;
+            inherits: true;
+        }
+
+        @property --border-color-1 {
+            syntax: '<color>';
+            initial-value: hsla(45, 80%, 60%, 0.3);
+            inherits: true;
+        }
+
+        @property --border-color-2 {
+            syntax: '<color>';
+            initial-value: hsla(45, 70%, 50%, 0.8);
+            inherits: true;
+        }
+
+        @property --stop-1 {
+            syntax: '<percentage>';
+            initial-value: 37.35%;
+            inherits: false;
+        }
+
+        @property --stop-2 {
+            syntax: '<percentage>';
+            initial-value: 61.36%;
+            inherits: false;
+        }
+
+        @property --stop-3 {
+            syntax: '<percentage>';
+            initial-value: 78.42%;
+            inherits: false;
+        }
+
+        @property --stop-4 {
+            syntax: '<percentage>';
+            initial-value: 89.52%;
+            inherits: false;
+        }
+
+        @property --stop-5 {
+            syntax: '<percentage>';
+            initial-value: 100%;
+            inherits: false;
+        }
+
+        :root {
+            /* Luxury Gold & Black Palette */
+            --gold: #D4AF37;
+            --gold-light: #FFD700;
+            --gold-dark: #C5A028;
+            --gold-metallic: #F4D03F;
+            --gold-rich: #B8860B;
+            --accent-gold: #DAA520;
+            
+            /* Deep Blacks */
+            --bg-dark: #000000;
+            --bg-void: #050505;
+            --bg-rich-black: #0A0A0A;
+            --surface: rgba(10, 10, 10, 0.85);
+            --surface-light: rgba(20, 20, 20, 0.9);
+            --border: rgba(212, 175, 55, 0.15);
+            --border-hover: rgba(212, 175, 55, 0.35);
+            
+            /* Text */
+            --text-primary: rgba(255, 255, 255, 0.98);
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --text-tertiary: rgba(255, 255, 255, 0.45);
+            --text-gold: #D4AF37;
+            --text-gold-light: #F4D03F;
+            
+            /* Card */
+            --card-bg: rgba(10, 10, 10, 0.95);
+            --card-border: rgba(212, 175, 55, 0.2);
+            
+            /* Shadows with Gold Glow */
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+            --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.6);
+            --shadow-gold: 0 4px 20px rgba(212, 175, 55, 0.15);
+            --shadow-gold-lg: 0 8px 32px rgba(212, 175, 55, 0.25);
+            
+            /* Status Colors */
+            --success: #52C41A;
+            --error: #FF4D4F;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background: var(--bg-dark);
+        }
+
+        /* Luxury Dark Background */
+        .background-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(197, 160, 40, 0.06) 0%, transparent 50%),
+                        var(--bg-void);
+        }
+
+        .gradient-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.25;
+            animation: floatSubtle 30s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .blob-1 {
+            width: 650px;
+            height: 650px;
+            background: radial-gradient(circle, var(--gold) 0%, transparent 70%);
+            top: -250px;
+            left: -200px;
+            animation-delay: 0s;
+        }
+
+        .blob-2 {
+            width: 550px;
+            height: 550px;
+            background: radial-gradient(circle, var(--gold-rich) 0%, transparent 70%);
+            bottom: -200px;
+            right: -150px;
+            animation-delay: -15s;
+        }
+
+        @keyframes floatSubtle {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            33% {
+                transform: translate(30px, 30px) scale(1.05);
+            }
+            66% {
+                transform: translate(-30px, 20px) scale(0.95);
+            }
+        }
+
+        /* Container */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 80px 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 50%, var(--gold-rich) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+            letter-spacing: -1.5px;
+            line-height: 1.1;
+            text-shadow: 0 2px 20px rgba(212, 175, 55, 0.3);
+        }
+
+        header p {
+            font-size: 1.125rem;
+            font-weight: 400;
+            color: var(--text-secondary);
+            letter-spacing: -0.2px;
+        }
+
+        /* Glass Container Base */
+        .glass-container {
+            background: var(--surface);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Info Section */
+        .info-section {
+            background: var(--surface);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            padding: 32px;
+            margin-bottom: 48px;
+            box-shadow: var(--shadow-sm), var(--shadow-gold);
+        }
+
+        .info-section h3 {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-gold);
+            margin-bottom: 24px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+        }
+
+        .info-item {
+            background: rgba(212, 175, 55, 0.08);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            padding: 24px 20px;
+            border-radius: 16px;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .info-item:hover {
+            background: rgba(212, 175, 55, 0.15);
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(212, 175, 55, 0.2);
+        }
+
+        .info-item h3 {
+            font-size: 0.8125rem;
+            font-weight: 500;
+            margin: 0;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            text-transform: none;
+            letter-spacing: -0.1px;
+        }
+
+        .info-item p {
+            font-size: 1.625rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        /* Main Buttons */
+        .main-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            margin-bottom: 48px;
+        }
+
+        .btn {
+            position: relative;
+            padding: 16px 24px;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            letter-spacing: -0.2px;
+            outline: none;
+        }
+
+        /* Primary Button - Solid */
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(10, 132, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-light);
+            box-shadow: 0 6px 20px rgba(10, 132, 255, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        /* Secondary Button - Dark Glass with Gold Accent */
+        .btn-secondary {
+            background: rgba(10, 10, 10, 0.7);
+            backdrop-filter: blur(20px);
+            color: var(--text-gold);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(212, 175, 55, 0.15);
+            border-color: var(--border-hover);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-gold);
+        }
+
+        .btn-secondary:active {
+            transform: translateY(0);
+        }
+
+        /* Tertiary Button - Subtle */
+        .btn-tertiary {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-tertiary:hover {
+            background: rgba(212, 175, 55, 0.08);
+            color: var(--text-gold);
+            border-color: var(--border-hover);
+        }
+
+        /* Success/Action Button */
+        .btn-success {
+            background: var(--success);
+            color: white;
+            box-shadow: 0 4px 12px rgba(48, 209, 88, 0.3);
+        }
+
+        .btn-success:hover {
+            background: #32D65C;
+            box-shadow: 0 6px 20px rgba(48, 209, 88, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-small {
+            padding: 12px 20px;
+            font-size: 0.875rem;
+        }
+
+        /* Liquid Gold Gradient Button */
+        .gradient-button {
+            position: relative;
+            appearance: none;
+            cursor: pointer;
+            min-width: 132px;
+            padding: 16px 36px;
+            font-size: 1rem;
+            line-height: 1.2;
+            font-weight: 600;
+            color: #000000;
+            border: none;
+            border-radius: 11px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            letter-spacing: -0.2px;
+            outline: none;
+            background: radial-gradient(
+                var(--spread-x) var(--spread-y) at var(--pos-x) var(--pos-y),
+                var(--color-1) var(--stop-1),
+                var(--color-2) var(--stop-2),
+                var(--color-3) var(--stop-3),
+                var(--color-4) var(--stop-4),
+                var(--color-5) var(--stop-5)
+            );
+            box-shadow: var(--shadow-gold);
+            transition:
+                --pos-x 0.5s,
+                --pos-y 0.5s,
+                --spread-x 0.5s,
+                --spread-y 0.5s,
+                --color-1 0.5s,
+                --color-2 0.5s,
+                --color-3 0.5s,
+                --color-4 0.5s,
+                --color-5 0.5s,
+                --border-angle 0.5s,
+                --border-color-1 0.5s,
+                --border-color-2 0.5s,
+                --stop-1 0.5s,
+                --stop-2 0.5s,
+                --stop-3 0.5s,
+                --stop-4 0.5s,
+                --stop-5 0.5s,
+                box-shadow 0.5s;
+        }
+
+        .gradient-button::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 1.5px;
+            background: linear-gradient(
+                var(--border-angle),
+                var(--border-color-1),
+                var(--border-color-2)
+            );
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        .gradient-button:hover {
+            --pos-x: 0%;
+            --pos-y: 88%;
+            --spread-x: 130%;
+            --spread-y: 110%;
+            --color-1: #3d2700;
+            --color-2: #8B6914;
+            --color-3: #D4AF37;
+            --color-4: #FFD700;
+            --color-5: #F4D03F;
+            --border-angle: 180deg;
+            --border-color-1: hsla(45, 85%, 70%, 0.4);
+            --border-color-2: hsla(45, 75%, 55%, 0.9);
+            --stop-1: 0%;
+            --stop-2: 12%;
+            --stop-3: 35%;
+            --stop-4: 68%;
+            --stop-5: 88%;
+            box-shadow: var(--shadow-gold-lg);
+        }
+
+        .gradient-button-variant {
+            --color-1: #1a1200;
+            --color-2: #5d4a1f;
+            --color-3: #B8860B;
+            --color-4: #DAA520;
+            --color-5: #FFD700;
+            --border-angle: 210deg;
+            --border-color-1: hsla(45, 90%, 65%, 0.5);
+            --border-color-2: hsla(45, 80%, 50%, 0.2);
+        }
+
+        .gradient-button-variant:hover {
+            --pos-x: 100%;
+            --pos-y: 92%;
+            --spread-x: 125%;
+            --spread-y: 115%;
+            --color-1: #2a1a00;
+            --color-2: #FFD700;
+            --color-3: #DAA520;
+            --color-4: #B8860B;
+            --color-5: #1a1200;
+            --stop-1: 0%;
+            --stop-2: 15%;
+            --stop-3: 40%;
+            --stop-4: 70%;
+            --stop-5: 92%;
+            --border-angle: 220deg;
+            --border-color-1: hsla(45, 92%, 68%, 0.3);
+            --border-color-2: hsla(45, 85%, 58%, 0.85);
+        }
+
+        .gradient-button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .gradient-button-small {
+            padding: 12px 24px;
+            font-size: 0.9375rem;
+            min-width: 100px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(40px);
+            border-radius: 24px;
+            padding: 40px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-lg), var(--shadow-gold);
+            border: 1px solid var(--card-border);
+            display: none;
+            color: var(--text-primary);
+        }
+
+        .card.active {
+            display: block;
+            animation: slideInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card h2 {
+            margin-bottom: 32px;
+            font-size: 1.75rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.8px;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--text-gold);
+            letter-spacing: -0.1px;
+        }
+
+        textarea, input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            font-size: 0.9375rem;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            background: rgba(10, 10, 10, 0.6);
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        textarea:focus, input:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.15);
+        }
+
+        textarea::placeholder, input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .example-text {
+            background: rgba(212, 175, 55, 0.08);
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-top: 12px;
+            font-size: 0.8125rem;
+            color: var(--text-gold);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid var(--border);
+        }
+
+        .example-text:hover {
+            background: rgba(212, 175, 55, 0.15);
+            border-color: var(--border-hover);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        /* Result Box */
+        .result-box {
+            background: rgba(212, 175, 55, 0.05);
+            border-left: 3px solid var(--gold);
+            padding: 24px;
+            border-radius: 12px;
+            margin-top: 24px;
+            display: none;
+        }
+
+        .result-box.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .result-box h3 {
+            color: var(--text-gold);
+            margin-bottom: 16px;
+            font-size: 1.125rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .transaction-item {
+            background: rgba(10, 10, 10, 0.6);
+            padding: 16px 20px;
+            margin: 12px 0;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .transaction-item:hover {
+            box-shadow: var(--shadow-gold);
+            transform: translateY(-1px);
+            border-color: var(--border-hover);
+        }
+
+        .transaction-item h4 {
+            color: var(--text-primary);
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 0.9375rem;
+            letter-spacing: -0.2px;
+        }
+
+        .transaction-item p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .success-message {
+            background: rgba(82, 196, 26, 0.12);
+            border: 1px solid rgba(82, 196, 26, 0.3);
+            color: var(--text-primary);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .success-message h3 {
+            color: var(--success);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .error-message {
+            background: rgba(255, 77, 79, 0.12);
+            border: 1px solid rgba(255, 77, 79, 0.3);
+            color: var(--text-primary);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .error-message strong {
+            color: var(--error);
+        }
+
+        /* Loading Spinner */
+        .loading {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2.5px solid rgba(0, 0, 0, 0.2);
+            border-radius: 50%;
+            border-top-color: #000000;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 48px 20px;
+            }
+
+            header {
+                margin-bottom: 48px;
+            }
+
+            header h1 {
+                font-size: 2.25rem;
+            }
+
+            header p {
+                font-size: 1rem;
+            }
+
+            .card {
+                padding: 28px 20px;
+            }
+
+            .main-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Subtle Background -->
+    <div class="background-container">
+        <div class="gradient-blob blob-1"></div>
+        <div class="gradient-blob blob-2"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>Smart Gold Accounting</h1>
+            <p>AI-Powered Transaction Management</p>
+        </header>
+
+        <!-- Info Section -->
+        <div class="info-section">
+            <h3>System Status</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <h3>Gold Price</h3>
+                    <p id="goldPrice">—</p>
+                </div>
+                <div class="info-item">
+                    <h3>Collaborators</h3>
+                    <p id="collaboratorCount">—</p>
+                </div>
+                <div class="info-item">
+                    <h3>Customers</h3>
+                    <p id="customerCount">—</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Action Buttons -->
+        <div class="main-buttons">
+            <button class="gradient-button" onclick="showEventForm()">
+                Register Event
+            </button>
+            <button class="gradient-button gradient-button-variant" onclick="showSuggestionForm()">
+                Get Suggestion
+            </button>
+            <button class="btn btn-secondary" onclick="showAccounts()">
+                View Accounts
+            </button>
+        </div>
+
+        <!-- Event Form Card -->
+        <div id="eventCard" class="card">
+            <h2>Register Transaction Event</h2>
+            <div class="form-group">
+                <label for="eventText">Describe the transaction</label>
+                <textarea id="eventText" placeholder="Example: Customer Rezaei bought 4 grams of finished gold for 45 million Toman. Pay this money to Collaborator Akbari to settle 4.5 grams of gold debt."></textarea>
+                
+                <div class="example-text" onclick="fillExample('event')">
+                    Use example: "Customer Rezaei bought 4 grams of finished gold for 45 million Toman..."
+                </div>
+            </div>
+            <div class="button-group">
+                <button class="gradient-button gradient-button-small" onclick="analyzeEvent()">
+                    <span id="analyzeSpinner"></span>
+                    Analyze Transaction
+                </button>
+                <button class="btn btn-tertiary btn-small" onclick="hideAllCards()">Cancel</button>
+            </div>
+
+            <!-- Results -->
+            <div id="eventResults" class="result-box"></div>
+        </div>
+
+        <!-- Suggestion Form Card -->
+        <div id="suggestionCard" class="card">
+            <h2>Get Smart Suggestion</h2>
+            <div class="form-group">
+                <label for="scenarioText">Describe your scenario</label>
+                <textarea id="scenarioText" placeholder="Example: A customer wants to buy 45 million Toman worth of gold"></textarea>
+                
+                <div class="example-text" onclick="fillExample('suggestion')">
+                    Use example: "A customer wants to buy 45 million Toman worth of gold"
+                </div>
+            </div>
+            <div class="button-group">
+                <button class="gradient-button gradient-button-small gradient-button-variant" onclick="getSuggestion()">
+                    <span id="suggestionSpinner"></span>
+                    Get Suggestion
+                </button>
+                <button class="btn btn-tertiary btn-small" onclick="hideAllCards()">Cancel</button>
+            </div>
+
+            <!-- Results -->
+            <div id="suggestionResults" class="result-box"></div>
+        </div>
+
+        <!-- Accounts View Card -->
+        <div id="accountsCard" class="card">
+            <h2>Account Overview</h2>
+            <div id="accountsResults"></div>
+            <button class="btn btn-tertiary btn-small" onclick="hideAllCards()" style="margin-top: 24px;">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // Global variable to store the current plan
+        let currentPlan = null;
+
+        // Load initial data
+        document.addEventListener('DOMContentLoaded', function() {
+            loadGoldPrice();
+            loadAccountCounts();
+        });
+
+        async function loadGoldPrice() {
+            try {
+                const response = await fetch('/gold-price');
+                const data = await response.json();
+                document.getElementById('goldPrice').textContent = data.formatted;
+            } catch (error) {
+                document.getElementById('goldPrice').textContent = 'Error';
+                console.error('Error loading gold price:', error);
+            }
+        }
+
+        async function loadAccountCounts() {
+            try {
+                const response = await fetch('/accounts?account_type=all');
+                const data = await response.json();
+                
+                const collaborators = data.accounts.filter(acc => acc.type === 'collaborator');
+                const customers = data.accounts.filter(acc => acc.type === 'customer');
+                
+                document.getElementById('collaboratorCount').textContent = collaborators.length;
+                document.getElementById('customerCount').textContent = customers.length;
+            } catch (error) {
+                console.error('Error loading accounts:', error);
+            }
+        }
+
+        function showEventForm() {
+            hideAllCards();
+            document.getElementById('eventCard').classList.add('active');
+        }
+
+        function showSuggestionForm() {
+            hideAllCards();
+            document.getElementById('suggestionCard').classList.add('active');
+        }
+
+        function showAccounts() {
+            hideAllCards();
+            loadAllAccounts();
+            document.getElementById('accountsCard').classList.add('active');
+        }
+
+        function hideAllCards() {
+            document.querySelectorAll('.card').forEach(card => {
+                card.classList.remove('active');
+            });
+            document.querySelectorAll('.result-box').forEach(box => {
+                box.classList.remove('active');
+            });
+        }
+
+        function fillExample(type) {
+            if (type === 'event') {
+                document.getElementById('eventText').value = "Customer Rezaei bought 4 grams of finished gold for 45 million Toman. Pay this money to Collaborator Akbari to settle 4.5 grams of gold debt.";
+            } else if (type === 'suggestion') {
+                document.getElementById('scenarioText').value = "A customer wants to buy 45 million Toman worth of gold";
+            }
+        }
+
+        async function analyzeEvent() {
+            const text = document.getElementById('eventText').value.trim();
+            
+            if (!text) {
+                alert('Please enter a transaction description');
+                return;
+            }
+
+            const spinner = document.getElementById('analyzeSpinner');
+            spinner.innerHTML = '<span class="loading"></span>';
+            
+            try {
+                const response = await fetch('/process-event', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: text })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentPlan = data.plan;
+                    displayEventResults(data);
+                } else {
+                    displayError('eventResults', data.detail || 'Failed to analyze transaction');
+                }
+            } catch (error) {
+                displayError('eventResults', 'Network error: ' + error.message);
+            } finally {
+                spinner.innerHTML = '';
+            }
+        }
+
+        function displayEventResults(data) {
+            const resultsDiv = document.getElementById('eventResults');
+            
+            let html = '<h3>Transaction Plan</h3>';
+            html += `<p style="margin-bottom: 16px; color: #6e6e73; font-size: 0.875rem;">${data.message}</p>`;
+            
+            data.plan.forEach(item => {
+                html += `
+                    <div class="transaction-item">
+                        <h4>Step ${item.step}: ${item.action}</h4>
+                        <p>${item.description || 'No additional description'}</p>
+                    </div>
+                `;
+            });
+            
+            html += `
+                <div class="button-group" style="margin-top: 20px;">
+                    <button class="gradient-button gradient-button-small" onclick="executePlan()">
+                        Approve & Execute
+                    </button>
+                    <button class="btn btn-tertiary btn-small" onclick="document.getElementById('eventResults').classList.remove('active'); currentPlan = null;">
+                        Cancel
+                    </button>
+                </div>
+            `;
+            
+            resultsDiv.innerHTML = html;
+            resultsDiv.classList.add('active');
+        }
+
+        async function executePlan() {
+            if (!currentPlan) {
+                alert('No plan to execute');
+                return;
+            }
+
+            try {
+                const response = await fetch('/execute-plan', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ plan: currentPlan })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const resultsDiv = document.getElementById('eventResults');
+                    resultsDiv.innerHTML = `
+                        <div class="success-message">
+                            <h3>Success</h3>
+                            <p>${data.message}</p>
+                            <p style="margin-top: 8px; font-size: 0.875rem; color: #6e6e73;">
+                                Executed ${data.results.length} transaction(s) successfully.
+                            </p>
+                        </div>
+                        <button class="gradient-button gradient-button-small" onclick="hideAllCards(); document.getElementById('eventText').value = ''; currentPlan = null;" style="margin-top: 16px;">
+                            Done
+                        </button>
+                    `;
+                } else {
+                    displayError('eventResults', data.detail || 'Failed to execute plan');
+                }
+            } catch (error) {
+                displayError('eventResults', 'Network error: ' + error.message);
+            }
+        }
+
+        async function getSuggestion() {
+            const scenario = document.getElementById('scenarioText').value.trim();
+            
+            if (!scenario) {
+                alert('Please enter a scenario description');
+                return;
+            }
+
+            const spinner = document.getElementById('suggestionSpinner');
+            spinner.innerHTML = '<span class="loading"></span>';
+            
+            try {
+                const response = await fetch('/get-suggestion', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ scenario: scenario })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displaySuggestionResults(data);
+                } else {
+                    displayError('suggestionResults', data.detail || 'Failed to get suggestion');
+                }
+            } catch (error) {
+                displayError('suggestionResults', 'Network error: ' + error.message);
+            } finally {
+                spinner.innerHTML = '';
+            }
+        }
+
+        function displaySuggestionResults(data) {
+            const resultsDiv = document.getElementById('suggestionResults');
+            
+            let html = '<h3>Smart Suggestion</h3>';
+            html += `<div style="background: white; padding: 18px 20px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.06);">`;
+            html += `<p style="font-size: 0.9375rem; line-height: 1.6; color: #1d1d1f;">${data.suggestion}</p>`;
+            html += `</div>`;
+            
+            if (data.recommended_account) {
+                const acc = data.recommended_account;
+                html += `
+                    <div style="margin-top: 20px;">
+                        <h4 style="color: #1d1d1f; font-weight: 600; margin-bottom: 12px; font-size: 0.875rem;">Recommended Account</h4>
+                        <div class="transaction-item">
+                            <h4>${acc.name}</h4>
+                            <p>Gold: ${acc.balance.gold_gr} grams</p>
+                            <p>Rial: ${acc.balance.rial.toLocaleString()} Rial</p>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            resultsDiv.innerHTML = html;
+            resultsDiv.classList.add('active');
+        }
+
+        async function loadAllAccounts() {
+            try {
+                const response = await fetch('/accounts?account_type=all');
+                const data = await response.json();
+                
+                const resultsDiv = document.getElementById('accountsResults');
+                
+                let html = '<h3 style="color: #1d1d1f; margin-bottom: 20px; font-weight: 700; font-size: 1rem; letter-spacing: -0.3px;">Collaborators</h3>';
+                
+                const collaborators = data.accounts.filter(acc => acc.type === 'collaborator');
+                collaborators.forEach(acc => {
+                    html += `
+                        <div class="transaction-item">
+                            <h4>${acc.name}</h4>
+                            <p><strong>Gold:</strong> ${acc.balance.gold_gr} grams</p>
+                            <p><strong>Rial:</strong> ${acc.balance.rial.toLocaleString()} Rial</p>
+                            <p><strong>USD:</strong> $${acc.balance.usd.toLocaleString()}</p>
+                        </div>
+                    `;
+                });
+                
+                html += '<h3 style="color: #1d1d1f; margin: 32px 0 20px 0; font-weight: 700; font-size: 1rem; letter-spacing: -0.3px;">Customers</h3>';
+                
+                const customers = data.accounts.filter(acc => acc.type === 'customer');
+                customers.forEach(acc => {
+                    html += `
+                        <div class="transaction-item">
+                            <h4>${acc.name}</h4>
+                            <p><strong>Gold:</strong> ${acc.balance.gold_gr} grams</p>
+                            <p><strong>Rial:</strong> ${acc.balance.rial.toLocaleString()} Rial</p>
+                            <p><strong>USD:</strong> $${acc.balance.usd.toLocaleString()}</p>
+                        </div>
+                    `;
+                });
+                
+                resultsDiv.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading accounts:', error);
+                document.getElementById('accountsResults').innerHTML = `
+                    <div class="error-message">Failed to load accounts</div>
+                `;
+            }
+        }
+
+        function displayError(elementId, message) {
+            const resultsDiv = document.getElementById(elementId);
+            resultsDiv.innerHTML = `
+                <div class="error-message">
+                    <strong>Error:</strong> ${message}
+                </div>
+            `;
+            resultsDiv.classList.add('active');
+        }
+    </script>
+</body>
+</html>
