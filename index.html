@@ -858,6 +858,31 @@
                 <button class="btn btn-tertiary btn-small" onclick="hideAllCards()">Cancel</button>
             </div>
 
+            <!-- Clarification Section -->
+            <div id="clarificationSection" class="result-box" style="border-left-color: var(--accent-blue);">
+                <h3>Clarify Transaction</h3>
+                <p style="margin-bottom: 16px; color: var(--text-secondary); font-size: 0.9rem;">
+                    Please select the interpretation that matches your intent:
+                </p>
+                <div id="interpretationOptions" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;"></div>
+                
+                <div class="interpretation-item" style="margin-top: 16px;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <input type="radio" name="interpretation" value="other" id="optOther" onchange="toggleOtherText(true)">
+                        <label for="optOther" style="margin: 0; cursor: pointer;">Other (write your own)</label>
+                    </div>
+                    <textarea id="otherText" placeholder="Describe exactly what happened..." style="display: none; min-height: 80px; margin-top: 8px;"></textarea>
+                </div>
+
+                <div class="button-group" style="margin-top: 24px;">
+                    <button class="gradient-button gradient-button-small" onclick="confirmClarification()">
+                        <span id="clarifySpinner"></span>
+                        Proceed
+                    </button>
+                    <button class="btn btn-tertiary btn-small" onclick="resetClarification()">Back</button>
+                </div>
+            </div>
+
             <!-- Results -->
             <div id="eventResults" class="result-box"></div>
         </div>
@@ -963,6 +988,137 @@
         }
 
         async function analyzeEvent() {
+            const text = document.getElementById('eventText').value.trim();
+            
+            if (!text) {
+                alert('Please enter a transaction description');
+                return;
+            }
+
+            const spinner = document.getElementById('analyzeSpinner');
+            spinner.innerHTML = '<span class="loading"></span>';
+            
+            // Hide previous results
+            document.getElementById('eventResults').classList.remove('active');
+            document.getElementById('clarificationSection').classList.remove('active');
+            
+            try {
+                // Step 1: Clarify
+                const response = await fetch('/clarify-event', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayClarificationOptions(data.interpretations);
+                } else {
+                    displayError('eventResults', data.detail || 'Failed to clarify transaction');
+                }
+            } catch (error) {
+                displayError('eventResults', 'Network error: ' + error.message);
+            } finally {
+                spinner.innerHTML = '';
+            }
+        }
+
+        function displayClarificationOptions(interpretations) {
+            const container = document.getElementById('interpretationOptions');
+            container.innerHTML = '';
+            
+            interpretations.forEach((opt, index) => {
+                const id = `opt${index}`;
+                const div = document.createElement('div');
+                div.className = 'transaction-item';
+                div.style.margin = '0';
+                div.style.cursor = 'pointer';
+                div.onclick = () => {
+                    document.getElementById(id).checked = true;
+                    toggleOtherText(false);
+                };
+                
+                div.innerHTML = `
+                    <div style="display: flex; gap: 12px; align-items: flex-start;">
+                        <input type="radio" name="interpretation" value="${index}" id="${id}" ${index === 0 ? 'checked' : ''} onchange="toggleOtherText(false)" style="margin-top: 4px; width: auto;">
+                        <div>
+                            <label for="${id}" style="font-weight: 600; cursor: pointer; color: var(--text-primary); margin-bottom: 4px; display: block;">Option ${index + 1}</label>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">${opt.text}</p>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            
+            // Reset "Other" text visibility
+            toggleOtherText(false);
+            
+            document.getElementById('clarificationSection').classList.add('active');
+            // Hide main buttons temporarily to focus user
+            // document.querySelector('#eventCard .button-group').style.display = 'none';
+        }
+
+        function toggleOtherText(show) {
+            document.getElementById('otherText').style.display = show ? 'block' : 'none';
+        }
+
+        function resetClarification() {
+            document.getElementById('clarificationSection').classList.remove('active');
+            document.getElementById('eventResults').classList.remove('active');
+        }
+
+        async function confirmClarification() {
+            const selected = document.querySelector('input[name="interpretation"]:checked');
+            if (!selected) {
+                alert('Please select an option');
+                return;
+            }
+
+            let finalText = '';
+            if (selected.value === 'other') {
+                finalText = document.getElementById('otherText').value.trim();
+                if (!finalText) {
+                    alert('Please enter your description');
+                    return;
+                }
+            } else {
+                // Get text from the selected option card (we need to store it or retrieve it from DOM)
+                // A simpler way is to grab it from the DOM element we created
+                const index = parseInt(selected.value);
+                const p = selected.parentElement.querySelector('p');
+                finalText = p.textContent;
+            }
+
+            // Proceed to analyze
+            const spinner = document.getElementById('clarifySpinner');
+            spinner.innerHTML = '<span class="loading"></span>';
+            
+            try {
+                const response = await fetch('/process-event', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: finalText })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentPlan = data.plan;
+                    document.getElementById('clarificationSection').classList.remove('active');
+                    displayEventResults(data);
+                } else {
+                    displayError('eventResults', data.detail || 'Failed to process event');
+                }
+            } catch (error) {
+                displayError('eventResults', 'Network error: ' + error.message);
+            } finally {
+                spinner.innerHTML = '';
+            }
+        }
+
+        async function analyzeEventOriginal() { // Kept for reference or backup logic if needed
+            // This function is deprecated in favor of the new clarification flow
             const text = document.getElementById('eventText').value.trim();
             
             if (!text) {

@@ -64,7 +64,104 @@ class ExecutePlanInput(BaseModel):
     plan: List[Dict] = Field(..., description="List of transactions to execute")
 
 
+class ClarificationInput(BaseModel):
+    """Input model for clarifying a transaction description"""
+    text: str = Field(..., description="Natural language description of the transaction")
+
+
 # NLP Core Functions
+def clarify_transaction_with_llm(text: str) -> Dict:
+    """
+    Use OpenAI to generate probable interpretations of a transaction description.
+    
+    Args:
+        text: Natural language transaction description
+    
+    Returns:
+        Dict containing list of interpretations with probability scores
+    """
+    if not openai_client:
+        raise HTTPException(
+            status_code=500,
+            detail="OpenAI API key not configured. Please set OPENAI_API_KEY in .env file."
+        )
+    
+    # Get current accounts and gold price for context
+    collaborators = adapter.get_accounts(account_type='collaborator')
+    customers = adapter.get_accounts(account_type='customer')
+    gold_price = adapter.get_live_gold_price()
+    
+    # Build context for the LLM
+    customer_list = []
+    for customer in customers + collaborators:
+        customer_list.append({
+            "name": customer['name'],
+            "type": customer['type'],
+            "balance": customer['balance']
+        })
+    
+    bank_accounts = []
+    if hasattr(adapter, "get_bank_accounts"):
+        bank_accounts = adapter.get_bank_accounts()
+        
+    context = {
+        "customers": customer_list,
+        "bank_accounts": bank_accounts,
+        "gold_price": gold_price
+    }
+    
+    system_prompt = """You are an expert gold accounting assistant. The user provided a transaction description that might be ambiguous. 
+Based on the provided context (customers, bank accounts, gold price), generate up to 3 most likely interpretations of what the user meant. 
+Each interpretation should be a clear, detailed sentence explaining exactly what happens (e.g., 'Customer A sells 10g gold to the shop for X amount'). 
+Order them by probability (highest to lowest).
+
+Context:
+- Customers/Collaborators: {customers}
+- Bank Accounts: {bank_accounts}
+- Gold Price: {gold_price} Rial/gram
+
+Return JSON in this exact format: 
+{{
+  "interpretations": [
+    {{"text": "detailed explanation 1", "probability": 0.9}},
+    {{"text": "detailed explanation 2", "probability": 0.7}}
+  ]
+}}"""
+
+    user_prompt = f"""Transaction Description: {text}
+
+Generate clarification options."""
+
+    try:
+        response = openai_client.chat.completions.create(
+            model=openai_model,
+            messages=[
+                {"role": "system", "content": system_prompt.format(
+                    customers=context["customers"],
+                    bank_accounts=context["bank_accounts"],
+                    gold_price=context["gold_price"]
+                )},
+                {"role": "user", "content": user_prompt}
+            ],
+            response_format={"type": "json_object"},
+            temperature=0.4
+        )
+        
+        # Parse the response
+        import json
+        result_text = response.choices[0].message.content
+        result = json.loads(result_text)
+        
+        return result
+            
+    except Exception as e:
+        print(f"Error clarifying transaction with LLM: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to clarify transaction: {str(e)}"
+        )
+
+
 def analyze_transaction_with_llm(text: str) -> List[Dict]:
     """
     Use OpenAI to analyze a transaction description and extract structured data.
@@ -283,6 +380,21 @@ async def read_root():
     """Serve the frontend HTML page from project root so it loads regardless of cwd."""
     _index_path = Path(__file__).resolve().parent / "index.html"
     return FileResponse(_index_path)
+
+
+@app.post("/clarify-event")
+async def clarify_event(input_data: ClarificationInput):
+    """
+    Clarify ambiguous transaction descriptions.
+    
+    Returns up to 3 interpretations of the user's input.
+    """
+    try:
+        result = clarify_transaction_with_llm(input_data.text)
+        return result
+    except Exception as e:
+        print(f"Error in clarify_event: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/process-event")
