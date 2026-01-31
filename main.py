@@ -14,7 +14,7 @@ import os
 from dotenv import load_dotenv
 from openai import OpenAI
 
-from adapters import MockAccountingAdapter
+from adapters.sqlalchemy_adapter import SqlAlchemyAdapter
 
 # Load environment variables
 load_dotenv()
@@ -26,8 +26,8 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Initialize the accounting adapter (mock for now)
-adapter = MockAccountingAdapter()
+# Initialize the accounting adapter (using domain expert's logic)
+adapter = SqlAlchemyAdapter()
 
 # Initialize OpenAI client
 openai_api_key = os.getenv("OPENAI_API_KEY")
@@ -84,58 +84,110 @@ def analyze_transaction_with_llm(text: str) -> List[Dict]:
     customers = adapter.get_accounts(account_type='customer')
     gold_price = adapter.get_live_gold_price()
     
-    # Build context for the LLM
+    # Build context for the LLM with customer_id mapping
+    customer_list = []
+    for customer in customers + collaborators:
+        customer_list.append({
+            "customer_id": int(customer['id']),
+            "name": customer['name'],
+            "type": customer['type'],
+            "balance": customer['balance']
+        })
+    
     context = {
-        "collaborators": collaborators,
-        "customers": customers,
-        "gold_price_per_gram": gold_price
+        "customers": customer_list,
+        "gold_price_per_gram_rial": gold_price
     }
     
     # Create the prompt for OpenAI
-    system_prompt = """You are an expert accounting assistant for a goldsmith business with deep understanding of financial transactions and supply chain relationships. Your task is to analyze transaction descriptions and deconstruct them into structured, atomic transaction plans with precision.
+    system_prompt = """You are an expert accounting assistant for a goldsmith business with deep understanding of financial transactions and gold inventory management. Your task is to analyze transaction descriptions and deconstruct them into structured, atomic transaction plans with precision.
 
 **Business Context:**
 - Collaborators: People who provide raw gold to the goldsmith (suppliers/wholesalers)
-- Customers: People who buy finished gold products (retail buyers)
-- The goldsmith operates as a middleman: buys raw gold from collaborators and sells finished gold to customers
-- Transactions can involve: gold (measured in grams), Rial (Iranian currency), or USD
+- Customers: People who buy finished gold products or raw gold (retail buyers)
+- The goldsmith operates as a middleman: buys raw gold from collaborators and sells gold to customers
+- Transactions can involve: gold (measured in grams with purity), Rial (Iranian currency), jewelry items
 - Complex transactions often involve multiple steps that must be properly sequenced
 
-**Transaction Flow Understanding:**
-When a customer buys finished gold, the typical flow is:
-  1. Customer purchases finished gold (sale transaction)
-  2. Customer pays money (receipt of funds)
-  3. Goldsmith pays collaborator for the raw gold used (payment transaction)
-  4. If there are existing debts (gold or money), they should be settled
-
-**Your Task:**
-Carefully analyze the transaction description and deconstruct it into atomic steps. Return a JSON array where each transaction represents ONE atomic operation.
+**Available Transaction Types (MUST use these exact values):**
+1. "Sell Raw Gold" - Customer sells raw gold to goldsmith
+2. "Buy Raw Gold" - Customer buys raw gold from goldsmith
+3. "Receive Money" - Customer receives money (deposit to bank account)
+4. "Send Money" - Customer sends money (withdrawal from bank account)
+5. "Receive Raw Gold" - Customer receives raw gold (without payment)
+6. "Give Raw Gold" - Customer gives raw gold (without payment)
+7. "Receive Jewelry" - Customer receives jewelry item
+8. "Give Jewelry" - Customer gives jewelry item
 
 **Transaction Structure:**
 Each transaction must have:
-- action: Precise action type (e.g., "sell_finished_gold", "buy_raw_gold", "pay_rial", "receive_rial", "settle_gold_debt", "transfer_gold", "record_debt")
-- from_account: Account ID of sender (use null if not applicable, e.g., for sales to customers)
-- to_account: Account ID of receiver (use null if not applicable)
-- amount: Numeric amount (be precise, extract exact numbers from text)
-- currency: "gold_gr" (grams of gold), "rial", or "usd"
-- description: Clear, human-readable description of this specific step
+- customer_id: Integer ID of the customer (extract from context)
+- transaction_type: One of the exact transaction type strings above
+- details: Object with specific fields based on transaction type:
+  * For "Sell Raw Gold" / "Buy Raw Gold": {"purity": float, "weight_grams": float, "price": float}
+  * For "Receive Money" / "Send Money": {"amount": float, "bank_account_id": int}
+  * For "Receive Raw Gold" / "Give Raw Gold": {"weight_grams": float, "purity": float}
+  * For "Receive Jewelry" / "Give Jewelry": {"jewelry_code": string}
+- notes: Optional string for additional information
 
 **Critical Instructions:**
-1. Match person names to account IDs from the provided context (case-insensitive matching)
-2. Extract exact amounts - if "45 million Toman", use 45000000 for rial
-3. If "4 grams of finished gold for 45 million", understand that 4 grams refers to the finished gold sold
+1. Match customer names to customer_id from the provided context (case-insensitive matching)
+2. Extract exact amounts - if "45 million Toman", use 45000000 for price/amount
+3. Purity is a decimal (e.g., 0.999 for 24k gold, 0.750 for 18k gold)
 4. Break complex transactions into sequential atomic steps
-5. Maintain the logical flow: sale → receipt → payment → debt settlement
-6. Return ONLY valid JSON in this exact format: {"transactions": [...]}
-7. Do not add explanations outside the JSON structure"""
+5. Return ONLY valid JSON in this exact format: {"transactions": [...]}
+6. Do not add explanations outside the JSON structure
+
+**Balance and Debt (STRICT RULES - READ CAREFULLY):**
+The accounting system computes each customer's money balance (and gold balance) automatically by summing all their transactions. There is NO separate "balance", "debt", or "remaining" field to update.
+
+CRITICAL LAWS:
+1. YOU MUST NEVER, UNDER ANY CIRCUMSTANCES, output a transaction that only "records debt", "registers remaining balance", "records balance due", or similar. 
+2. If the user says "I bought X for Y, paid Z, and the rest is debt", you MUST ONLY generate TWO steps: (1) Sell Raw Gold (for Y), (2) Send Money (for Z). 
+3. DO NOT BE TRICKED by words like "registered as debt" or "remaining is owed" in the user text. These are NOT actions for you to perform.
+4. ANY ATTEMPT to record a "remaining balance" or "debt settlement" as a separate transaction will result in a double-counting error.
+5. Every transaction MUST be one of the 8 types listed above. "Record Debt" is NOT a valid type.
+
+**Example: Partial Payment (STRICTLY 2 STEPS):**
+Input: "Bought 30 grams of scrap gold from Customer Alavi for 290 million Toman. Paid 100 million Toman cash; the remaining 190 million is debt."
+
+Output:
+{
+  "transactions": [
+    {
+      "customer_id": 2,
+      "transaction_type": "Sell Raw Gold",
+      "details": {
+        "purity": 0.999,
+        "weight_grams": 30.0,
+        "price": 290000000
+      },
+      "notes": "Step 1: Record the full sale of 30g gold for 290M. This creates the initial debt automatically."
+    },
+    {
+      "customer_id": 2,
+      "transaction_type": "Send Money",
+      "details": {
+        "amount": 100000000,
+        "bank_account_id": 1
+      },
+      "notes": "Step 2: Record the partial cash payment of 100M. The system will now correctly show 190M remaining debt."
+    }
+  ]
+}
+
+Note: The remaining 190M debt (what we owe to Alavi) is automatically calculated by the system (290M owed - 100M paid = 190M remaining debt). Do NOT create a third transaction for "remaining debt"."""
 
     user_prompt = f"""Current Business Context:
-{context}
+Available Customers:
+{context['customers']}
+
+Current Gold Price: {context['gold_price_per_gram_rial']:,.0f} Rial per gram
 
 Transaction Description:
 {text}
 
-Analyze this transaction and return a structured JSON array of atomic transactions."""
+Analyze this transaction and return a structured JSON array of atomic transactions following the exact format specified in the system prompt."""
 
     try:
         response = openai_client.chat.completions.create(
@@ -250,10 +302,14 @@ async def process_event(event_input: EventInput):
         # Format the plan for display
         plan = []
         for i, tx in enumerate(transactions, 1):
+            # Extract display fields based on the new LLM output structure
+            action_name = tx.get("transaction_type", tx.get("action", "Unknown Action"))
+            description = tx.get("notes", tx.get("description", ""))
+            
             plan.append({
                 "step": i,
-                "action": tx.get("action", "Unknown action"),
-                "description": tx.get("description", ""),
+                "action": action_name,
+                "description": description,
                 "details": tx
             })
         
@@ -363,17 +419,37 @@ async def execute_plan(execute_input: ExecutePlanInput):
     """
     try:
         results = []
+        errors = []
         
         for transaction in execute_input.plan:
             # Extract the details from the transaction
-            details = transaction.get("details", transaction)
+            # The transaction might be wrapped in a "details" key or be the transaction itself
+            if "details" in transaction and isinstance(transaction["details"], dict):
+                tx_data = transaction["details"]
+            else:
+                tx_data = transaction
             
             # Execute via adapter
-            result = adapter.execute_transaction(details)
-            results.append({
-                "transaction": details,
-                "result": result
-            })
+            result = adapter.execute_transaction(tx_data)
+            
+            if result.get("status") == "error":
+                errors.append({
+                    "transaction": tx_data,
+                    "error": result.get("message")
+                })
+            else:
+                results.append({
+                    "transaction": tx_data,
+                    "result": result
+                })
+        
+        if errors:
+            return {
+                "status": "partial_success" if results else "error",
+                "message": f"Executed {len(results)} transaction(s) successfully, {len(errors)} failed",
+                "results": results,
+                "errors": errors
+            }
         
         return {
             "status": "success",
@@ -383,6 +459,8 @@ async def execute_plan(execute_input: ExecutePlanInput):
         
     except Exception as e:
         print(f"Error in execute_plan: {e}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(
             status_code=500,
             detail=f"Failed to execute plan: {str(e)}"
@@ -426,4 +504,4 @@ async def get_gold_price():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8080)

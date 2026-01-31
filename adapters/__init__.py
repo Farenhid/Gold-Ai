@@ -7,5 +7,6 @@ accounting systems using the Adapter design pattern.
 
 from .base import AccountingAdapter
 from .mock_adapter import MockAccountingAdapter
+from .sqlalchemy_adapter import SqlAlchemyAdapter
 
-__all__ = ["AccountingAdapter", "MockAccountingAdapter"]
+__all__ = ["AccountingAdapter", "MockAccountingAdapter", "SqlAlchemyAdapter"]
