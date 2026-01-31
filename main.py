@@ -162,6 +162,42 @@ Context:
         )
 
 
+# Helper to load scenarios
+def load_scenarios_context() -> str:
+    """Load and format scenarios from JSON file for the LLM prompt."""
+    try:
+        import json
+        scenarios_path = Path(__file__).resolve().parent / "prompts" / "jewelry_deal_scenarios.json"
+        
+        if not scenarios_path.exists():
+            return "No scenarios available."
+            
+        with open(scenarios_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            
+        formatted_output = "**الگوهای سناریو و مثال‌ها (برگرفته از پایگاه دانش):**\n\n"
+        
+        for i, scenario in enumerate(data.get("scenarios", []), 1):
+            title = scenario.get("title", f"Scenario {i}")
+            user_input = scenario.get("user_input", "")
+            reasoning = scenario.get("reasoning", "")
+            rules = scenario.get("rules_for_ai", [])
+            output = scenario.get("expected_output", [])
+            
+            formatted_output += f"{i}) {title}\n"
+            formatted_output += f"- ورودی کاربر: \"{user_input}\"\n"
+            formatted_output += f"- تحلیل: {reasoning}\n"
+            if rules:
+                formatted_output += f"- قوانین: {'; '.join(rules)}\n"
+            formatted_output += f"- خروجی مورد انتظار (JSON): {json.dumps(output, ensure_ascii=False)}\n\n"
+            
+        return formatted_output
+        
+    except Exception as e:
+        print(f"Error loading scenarios: {e}")
+        return "Error loading scenarios."
+
+
 def analyze_transaction_with_llm(text: str) -> List[Dict]:
     """
     Use OpenAI to analyze a transaction description and extract structured data.
@@ -204,7 +240,9 @@ def analyze_transaction_with_llm(text: str) -> List[Dict]:
     
     # Create the prompt for OpenAI (aligned with prompts/jewelry_deal_scenarios.json)
     # Output JSON MUST use English: transaction_type exact values, field names (customer_id, details, weight_grams, etc.)
-    system_prompt = """تو دستیار حسابداری متخصص برای کسب‌وکار طلافروشی هستی. وظیفه‌ات تحلیل توضیحات تراکنش و تبدیل آن‌ها به طرح تراکنش‌های اتمی و ساخت‌یافته است. context (مانده‌ها، حساب‌ها) از دیتابیس به تو داده می‌شود؛ user_input همان چیزی است که کاربر می‌گوید.
+    scenarios_context = load_scenarios_context()
+    
+    system_prompt = f"""تو دستیار حسابداری متخصص برای کسب‌وکار طلافروشی هستی. وظیفه‌ات تحلیل توضیحات تراکنش و تبدیل آن‌ها به طرح تراکنش‌های اتمی و ساخت‌یافته است. context (مانده‌ها، حساب‌ها) از دیتابیس به تو داده می‌شود؛ user_input همان چیزی است که کاربر می‌گوید.
 
 **زمینه کسب‌وکار:**
 - همکاران: کسانی که طلای خام به طلافروش می‌دهند (تأمین‌کننده/عمده‌فروش)
@@ -227,10 +265,10 @@ def analyze_transaction_with_llm(text: str) -> List[Dict]:
 - customer_id: عدد صحیح از context (نام اشخاص/حساب‌ها را به ID تبدیل کن)
 - transaction_type: یکی از رشته‌های دقیق بالا به انگلیسی
 - details: آبجکت با فیلدهای مشخص بر اساس نوع تراکنش (نام فیلدها به انگلیسی):
-  * برای "Sell Raw Gold" / "Buy Raw Gold": {"purity": number, "weight_grams": float, "price": float}
-  * برای "Receive Money" / "Send Money": {"amount": float, "bank_account_id": int}
-  * برای "Receive Raw Gold" / "Give Raw Gold": {"weight_grams": float, "purity": number}
-  * برای "Receive Jewelry" / "Give Jewelry": {"jewelry_code": string}
+  * برای "Sell Raw Gold" / "Buy Raw Gold": {{"purity": number, "weight_grams": float, "price": float}}
+  * برای "Receive Money" / "Send Money": {{"amount": float, "bank_account_id": int}}
+  * برای "Receive Raw Gold" / "Give Raw Gold": {{"weight_grams": float, "purity": number}}
+  * برای "Receive Jewelry" / "Give Jewelry": {{"jewelry_code": string}}
 - notes: رشتهٔ اختیاری (می‌توانی فارسی باشد)
 
 **دستورات مهم:**
@@ -246,10 +284,7 @@ def analyze_transaction_with_llm(text: str) -> List[Dict]:
 - تراکنش جدا برای «باقی‌ماندهٔ بدهی» نساز؛ دوبارشمارشی می‌شود.
 - هر تراکنش باید یکی از ۸ نوع بالا باشد. "Record Debt" مجاز نیست.
 
-**الگوهای سناریوی پیچیده:**
-۱) تسویه بدهی طلا: بخش طلا، بخش نقد — خروجی ۳ تراکنش: Give Raw Gold، Buy Raw Gold، Send Money.
-۲) فروش جنس به مشتری نهایی؛ مشتری به همکار پول می‌دهد؛ ما بدهی طلا را تسویه می‌کنیم — خروجی ۴ تراکنش: Give Jewelry، Receive Money، Buy Raw Gold، Send Money.
-۳) طرف سوم به جای ما طلا داد (تسویه مثلثی) — خروجی ۲ تراکنش: Receive Raw Gold از A، Give Raw Gold به B.
+{scenarios_context}
 
 خروجی را فقط به صورت JSON معتبر با کلید "transactions" و مقادیر transaction_type و نام فیلدها به انگلیسی برگردان."""
 
