@@ -1,5 +1,5 @@
 {
-  "description": "Few-shot scenarios for jewelry/gold deals. Context (balances, accounts) is provided by the system at runtime; user_input is what the person says.",
+  "description": "سناریوهای نمونه برای معاملات طلا و جواهر. context (مانده‌ها، حساب‌ها) در زمان اجرا از سیستم داده می‌شود؛ user_input همان چیزی است که کاربر می‌گوید.",
   "transaction_types_reference": [
     "Sell Raw Gold",
     "Buy Raw Gold",
@@ -13,129 +13,128 @@
   "scenarios": [
     {
       "id": "debt_settlement_gold_and_cash",
-      "title": "Settling gold debt: part in gold, part in cash",
+      "title": "تسویه بدهی طلا: بخش طلا، بخش نقد",
       "context": {
-        "person": "Mr. Zamani",
-        "person_role": "collaborator",
-        "prior_state": "We owe Mr. Zamani 12 grams of gold (his balance: +12g gold). Context is provided by the system from the database, not stated by the user."
+        "person": "آقای زمانی",
+        "person_role": "همکار",
+        "prior_state": "ما به آقای زمانی ۱۲ گرم طلا بدهکاریم (ماندهٔ او: +۱۲ گرم طلا). context از دیتابیس توسط سیستم داده می‌شود، نه توسط کاربر."
       },
-      "user_input": "I gave MR. zamani 8 grams of gold and paid 2000$ for 4 grams from haspa account",
-      "reasoning": "User settles the full 12g debt: (1) 8g by giving physical gold → Give Raw Gold 8g. (2) Remaining 4g settled in cash → Buy Raw Gold 4g, price 2000, and Send Money 2000 from haspa. Order: give gold, buy gold (settlement), send money.",
+      "user_input": "۸ گرم طلا به آقای زمانی دادم و ۲۰۰۰ دلار برای ۴ گرم از حساب haspa پرداختم",
+      "reasoning": "کاربر کل بدهی ۱۲ گرم را تسویه می‌کند: (۱) ۸ گرم با دادن طلای فیزیکی → Give Raw Gold 8g. (۲) ۴ گرم باقی با نقد → Buy Raw Gold 4g قیمت 2000، و Send Money 2000 از haspa. ترتیب: دادن طلا، خرید طلا (تسویه)، فرستادن پول.",
       "expected_transaction_count": 3,
       "expected_output": [
         {
           "customer_id": "<Zamani_customer_id>",
           "transaction_type": "Give Raw Gold",
           "details": { "weight_grams": 8, "purity": 18 },
-          "notes": "Gave 8g gold to Mr. Zamani; part of 12g debt settlement"
+          "notes": "۸ گرم طلا به آقای زمانی داده شد؛ بخشی از تسویه بدهی ۱۲ گرمی"
         },
         {
           "customer_id": "<Zamani_customer_id>",
           "transaction_type": "Buy Raw Gold",
           "details": { "purity": 18, "weight_grams": 4, "price": 2000 },
-          "notes": "Settled remaining 4g debt by cash; we did not receive physical gold"
+          "notes": "۴ گرم بدهی با نقد تسویه شد؛ طلای فیزیکی دریافت نشد"
         },
         {
           "customer_id": "<Zamani_customer_id>",
           "transaction_type": "Send Money",
           "details": { "amount": 2000, "bank_account_id": "<haspa_account_id>" },
-          "notes": "Paid 2000 USD from Haspa account for 4g settlement"
+          "notes": "۲۰۰۰ دلار از حساب Haspa برای تسویه ۴ گرم پرداخت شد"
         }
       ],
-      "outcome": "Mr. Zamani's remaining gold balance is zero (12 − 8 − 4).",
+      "outcome": "ماندهٔ طلای آقای زمانی صفر می‌شود (۱۲ − ۸ − ۴).",
       "rules_for_ai": [
-        "When user says 'gave X grams' and 'paid $Y for Z grams from <account>', output 3 transactions: Give Raw Gold X g, Buy Raw Gold Z g price Y, Send Money Y from named account.",
-        "Use system-provided context (balances) to validate: X + Z = owed amount.",
-        "Resolve person name and account name to IDs from context."
+        "وقتی کاربر می‌گوید «X گرم دادم» و «Y دلار برای Z گرم از حساب <account> پرداختم»، خروجی ۳ تراکنش: Give Raw Gold X g، Buy Raw Gold Z g قیمت Y، Send Money Y از حساب نام‌برده.",
+        "با context سیستم تأیید کن: X + Z = مقدار بدهی. نام شخص و حساب را به ID از context نگاشت کن."
       ]
     },
     {
       "id": "jewelry_sale_settle_debt_via_collaborator",
-      "title": "Sell jewelry to end user; end user pays collaborator; we settle gold debt",
+      "title": "فروش جنس به مشتری نهایی؛ مشتری به همکار پول می‌دهد؛ ما بدهی طلا را تسویه می‌کنیم",
       "context": {
-        "person_collaborator": "Mr. Zamani",
-        "prior_state": "We owe Mr. Zamani 12 grams of gold (his balance: +12g gold). Context from system. After settling 8g, remaining = 4g.",
-        "end_user": "End user (customer) who buys the jewelry.",
-        "jewelry": "Jewelry item no 12 (use jewelry_code from context, e.g. \"12\" or \"ITEM-12\")."
+        "person_collaborator": "آقای زمانی",
+        "prior_state": "ما به آقای زمانی ۱۲ گرم طلا بدهکاریم (ماندهٔ او: +۱۲ گرم طلا). بعد از تسویه ۸ گرم، باقی = ۴ گرم.",
+        "end_user": "مشتری نهایی که جنس را می‌خرد.",
+        "jewelry": "قلم جواهر شماره ۱۲ (از context از jewelry_code استفاده کن، مثلاً «۱۲» یا «ITEM-12»)."
       },
-      "user_input": "We sold jewelry item no 12 to an end user for 3000$ and he paid it to mr zamani for 8 grams of gold",
-      "reasoning": "Five logical steps: (1) Sell item to end user → record the sale. (2) Give item to end user → hand over jewelry. (3) Get 3000 from end user → we receive the payment (or end user pays Zamani directly; see below). (4) Buy 8 grams from Mr. Zamani → we settle 8g of our debt (we did not receive physical gold). (5) Pay 3000 to Mr. Zamani → the cash goes to him. In the API, 'sell' and 'give item' are one transaction: Give Jewelry (item 12 to end user). So we output 4 API transactions: Give Jewelry, Receive Money (3000 from end user), Buy Raw Gold (8g from Zamani, price 3000), Send Money (3000 to Zamani). Order: give item → receive money → buy 8g → send money. If end user paid Zamani directly, we may still record Receive Money (we received the sale consideration) and Send Money (we paid Zamani) so our books balance.",
-      "expected_transaction_count": 5,
+      "user_input": "قلم جواهر شماره ۱۲ را به یک مشتری نهایی به ۳۰۰۰ دلار فروختیم و او آن را به آقای زمانی برای ۸ گرم طلا پرداخت کرد",
+      "reasoning": "پنج گام منطقی: (۱) فروش قلم به مشتری نهایی (۲) تحویل قلم به مشتری (۳) دریافت ۳۰۰۰ از مشتری (۴) خرید ۸ گرم از آقای زمانی — تسویه ۸ گرم بدهی (۵) پرداخت ۳۰۰۰ به آقای زمانی. در API، «فروش» و «تحویل قلم» یک تراکنش است: Give Jewelry. پس ۴ تراکنش API: Give Jewelry، Receive Money (۳۰۰۰ از مشتری)، Buy Raw Gold (۸ گرم از زمانی، قیمت ۳۰۰۰)، Send Money (۳۰۰۰ به زمانی).",
+      "expected_transaction_count": 4,
       "logical_steps": [
-        "1. Sell item to end user",
-        "2. Give item to end user",
-        "3. Get 3000$ from end user",
-        "4. Buy 8 grams from Mr. Zamani",
-        "5. Pay 3000$ to Mr. Zamani"
+        "۱. فروش قلم به مشتری نهایی",
+        "۲. تحویل قلم به مشتری",
+        "۳. دریافت ۳۰۰۰ دلار از مشتری",
+        "۴. خرید ۸ گرم از آقای زمانی",
+        "۵. پرداخت ۳۰۰۰ دلار به آقای زمانی"
       ],
-      "api_note": "Steps 1 and 2 map to one Give Jewelry transaction (sale = give item). So 5 logical steps → 4 API transactions.",
+      "api_note": "گام‌های ۱ و ۲ در API به یک تراکنش Give Jewelry نگاشت می‌شوند. پس ۵ گام منطقی → ۴ تراکنش API.",
       "expected_output": [
         {
           "customer_id": "<end_user_customer_id>",
           "transaction_type": "Give Jewelry",
           "details": { "jewelry_code": "<jewelry_code_item_12>" },
-          "notes": "Sold jewelry item no 12 to end user; give item to end user (steps 1+2)"
+          "notes": "قلم جواهر شماره ۱۲ به مشتری نهایی فروخته و تحویل داده شد"
         },
         {
           "customer_id": "<end_user_customer_id>",
           "transaction_type": "Receive Money",
           "details": { "amount": 3000, "bank_account_id": "<account_where_end_user_paid>" },
-          "notes": "Get 3000$ from end user (sale payment)"
+          "notes": "۳۰۰۰ دلار از مشتری نهایی (پرداخت فروش) دریافت شد"
         },
         {
           "customer_id": "<Zamani_customer_id>",
           "transaction_type": "Buy Raw Gold",
           "details": { "purity": 18, "weight_grams": 8, "price": 3000 },
-          "notes": "Buy 8 grams from Mr. Zamani (settle 8g debt; we did not receive physical gold)"
+          "notes": "۸ گرم از آقای زمانی خریداری شد (تسویه ۸ گرم بدهی؛ طلای فیزیکی دریافت نشد)"
         },
         {
           "customer_id": "<Zamani_customer_id>",
           "transaction_type": "Send Money",
           "details": { "amount": 3000, "bank_account_id": "<account_used_to_pay_Zamani>" },
-          "notes": "Pay 3000$ to Mr. Zamani for 8g settlement"
+          "notes": "۳۰۰۰ دلار به آقای زمانی برای تسویه ۸ گرم پرداخت شد"
         }
       ],
-      "outcome": "Jewelry item no 12 is sold (out of our stock). We owed Mr. Zamani 12g; we settled 8g with the 3000$ payment. Mr. Zamani's remaining gold balance with us: 12 − 8 = 4 grams.",
+      "outcome": "قلم جواهر شماره ۱۲ فروخته شد (از موجودی ما خارج شد). ما به آقای زمانی ۱۲ گرم بدهکار بودیم؛ ۸ گرم را با پرداخت ۳۰۰۰ دلار تسویه کردیم. ماندهٔ طلای آقای زمانی نزد ما: ۱۲ − ۸ = ۴ گرم.",
       "rules_for_ai": [
-        "When user says 'sold jewelry item no X to end user for $Y and he paid it to [collaborator] for Z grams of gold', output in order: (1) Give Jewelry (item X to end user) — this is both 'sell' and 'give item'; (2) Receive Money (amount Y from end user); (3) Buy Raw Gold (Z g from collaborator, price Y); (4) Send Money (amount Y to collaborator).",
-        "Resolve: end user → customer_id; collaborator (e.g. Mr. Zamani) → customer_id; jewelry 'item no 12' → jewelry_code from context; bank accounts from context.",
-        "Use system-provided context: we owe collaborator N grams; after this deal we settle Z grams, so remaining debt = N − Z. Here: 12 − 8 = 4 grams owed to Mr. Zamani."
+        "وقتی کاربر می‌گوید «قلم جواهر شماره X را به مشتری نهایی به Y دلار فروختیم و او به [همکار] برای Z گرم طلا پرداخت کرد»، خروجی به ترتیب: (۱) Give Jewelry (قلم X به مشتری نهایی)؛ (۲) Receive Money (مبلغ Y از مشتری)؛ (۳) Buy Raw Gold (Z گرم از همکار، قیمت Y)؛ (۴) Send Money (مبلغ Y به همکار).",
+        "از context: end user → customer_id؛ همکار (مثلاً آقای زمانی) → customer_id؛ قلم «شماره ۱۲» → jewelry_code؛ حساب‌های بانکی از context.",
+        "بعد از این معامله بدهی به همکار = N − Z گرم. اینجا: ۱۲ − ۸ = ۴ گرم به آقای زمانی بدهکاریم."
       ]
     },
     {
       "id": "triangular_settlement_gold_on_our_behalf",
-      "title": "Third party gave gold on our behalf (triangular settlement)",
+      "title": "طرف سوم به جای ما طلا داد (تسویه مثلثی)",
       "context": {
-        "we_owe": "We owe Mr. Zamani 10 grams of gold (his balance: +10g).",
-        "owes_us": "Mr. Talebi owes us 8 grams of gold (his balance: −8g with us).",
-        "note": "Context from system."
+        "we_owe": "ما به آقای زمانی ۱۰ گرم طلا بدهکاریم (ماندهٔ او: +۱۰ گرم).",
+        "owes_us": "آقای طالبی به ما ۸ گرم طلا بدهکار است (ماندهٔ او نزد ما: −۸ گرم).",
+        "note": "context از سیستم است."
       },
-      "user_input": "mr. talebi gave mr. zamani 8 grams on us behalf",
-      "reasoning": "Talebi gave 8g to Zamani on our behalf: we effectively (1) receive 8g from Talebi (settles his debt to us) and (2) give 8g to Zamani (settles part of our debt to him). So 2 transactions: Receive Raw Gold 8g from Talebi, then Give Raw Gold 8g to Zamani.",
+      "user_input": "آقای طالبی ۸ گرم به آقای زمانی به جای ما داد",
+      "reasoning": "طالبی ۸ گرم به زمانی به جای ما داد: ما عملاً (۱) ۸ گرم از طالبی دریافت می‌کنیم (بدهی او به ما تسویه می‌شود) و (۲) ۸ گرم به زمانی می‌دهیم (بخشی از بدهی ما به او تسویه می‌شود). پس ۲ تراکنش: Receive Raw Gold 8g از طالبی، سپس Give Raw Gold 8g به زمانی.",
       "expected_transaction_count": 2,
       "logical_steps": [
-        "1. Get 8 grams from Mr. Talebi (we receive 8g; settles Talebi's debt to us)",
-        "2. Give 8 grams to Mr. Zamani (we give 8g; settles part of our debt to him)"
+        "۱. دریافت ۸ گرم از آقای طالبی (بدهی طالبی به ما تسویه می‌شود)",
+        "۲. دادن ۸ گرم به آقای زمانی (بخشی از بدهی ما به او تسویه می‌شود)"
       ],
       "expected_output": [
         {
           "customer_id": "<Talebi_customer_id>",
           "transaction_type": "Receive Raw Gold",
           "details": { "weight_grams": 8, "purity": 18 },
-          "notes": "Mr. Talebi gave 8g on our behalf; we receive 8g from Mr. Talebi (settles his debt to us)"
+          "notes": "آقای طالبی ۸ گرم به جای ما داد؛ ما ۸ گرم از آقای طالبی دریافت کردیم (بدهی او به ما تسویه شد)"
         },
         {
           "customer_id": "<Zamani_customer_id>",
           "transaction_type": "Give Raw Gold",
           "details": { "weight_grams": 8, "purity": 18 },
-          "notes": "Give 8g to Mr. Zamani on our behalf (Talebi gave him; settles part of our debt)"
+          "notes": "۸ گرم به آقای زمانی به جای ما داده شد (طالبی به او داد؛ بخشی از بدهی ما تسویه شد)"
         }
       ],
-      "outcome": "We have nothing open with Mr. Talebi (his 8g debt to us is settled). We owe Mr. Zamani only 2 grams (10 − 8 = 2).",
+      "outcome": "با آقای طالبی تسویه شد (بدهی ۸ گرمی او به ما صفر شد). به آقای زمانی فقط ۲ گرم بدهکاریم (۱۰ − ۸ = ۲).",
       "rules_for_ai": [
-        "When user says '[person A] gave [person B] X grams on us behalf' (or 'on our behalf'), output 2 transactions in order: (1) Receive Raw Gold X g from person A (we get the gold from A; settles A's debt to us); (2) Give Raw Gold X g to person B (we give the gold to B; settles part of our debt to B).",
-        "Use system-provided context: we owe B N grams; A owes us M grams. After this deal: A's balance with us = 0 (if M = X); we owe B only N − X grams. Here: Talebi 0 open, we owe Zamani 10 − 8 = 2g.",
-        "Resolve person names to customer_id from context. Use default purity (e.g. 18) if not stated."
+        "وقتی کاربر می‌گوید «[شخص الف] X گرم به [شخص ب] به جای ما داد»، خروجی ۲ تراکنش به ترتیب: (۱) Receive Raw Gold X g از شخص الف؛ (۲) Give Raw Gold X g به شخص ب.",
+        "از context: ما به ب، N گرم بدهکاریم؛ الف به ما M گرم بدهکار است. بعد از این معامله: ماندهٔ الف با ما = ۰ (اگر M = X)؛ به ب فقط N − X گرم بدهکاریم.",
+        "نام اشخاص را به customer_id از context نگاشت کن. اگر عیار گفته نشد پیش‌فرض (مثلاً 18) بگذار."
       ]
     }
   ]

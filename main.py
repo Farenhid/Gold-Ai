@@ -110,27 +110,27 @@ def clarify_transaction_with_llm(text: str) -> Dict:
         "gold_price": gold_price
     }
     
-    system_prompt = """You are an expert gold accounting assistant. The user provided a transaction description that might be ambiguous. 
-Based on the provided context (customers, bank accounts, gold price), generate up to 3 most likely interpretations of what the user meant. 
-Each interpretation should be a clear, detailed sentence explaining exactly what happens (e.g., 'Customer A sells 10g gold to the shop for X amount'). 
-Order them by probability (highest to lowest).
+    system_prompt = """تو دستیار حسابداری طلای متخصصی هستی. کاربر یک توضیح تراکنش داده که ممکن است مبهم باشد. 
+بر اساس context داده‌شده (مشتریان، همکاران، حساب‌های بانکی، قیمت طلا)، حداکثر ۳ تفسیر محتمل از منظور کاربر تولید کن. 
+هر تفسیر باید یک جملهٔ واضح و دقیق به فارسی باشد که دقیقاً چه اتفاقی افتاده (مثلاً «مشتری الف ۱۰ گرم طلا به مغازه فروخت به مبلغ X»). 
+آن‌ها را به ترتیب احتمال (از بیشتر به کمتر) مرتب کن.
 
 Context:
-- Customers/Collaborators: {customers}
-- Bank Accounts: {bank_accounts}
-- Gold Price: {gold_price} Rial/gram
+- مشتریان/همکاران: {customers}
+- حساب‌های بانکی: {bank_accounts}
+- قیمت طلا: {gold_price} ریال/گرم
 
-Return JSON in this exact format: 
+خروجی را فقط به صورت JSON در این قالب دقیق برگردان: 
 {{
   "interpretations": [
-    {{"text": "detailed explanation 1", "probability": 0.9}},
-    {{"text": "detailed explanation 2", "probability": 0.7}}
+    {{"text": "توضیح دقیق ۱ به فارسی", "probability": 0.9}},
+    {{"text": "توضیح دقیق ۲ به فارسی", "probability": 0.7}}
   ]
 }}"""
 
-    user_prompt = f"""Transaction Description: {text}
+    user_prompt = f"""توضیح تراکنش کاربر: {text}
 
-Generate clarification options."""
+گزینه‌های شفاف‌سازی را تولید کن."""
 
     try:
         response = openai_client.chat.completions.create(
@@ -158,7 +158,7 @@ Generate clarification options."""
         print(f"Error clarifying transaction with LLM: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to clarify transaction: {str(e)}"
+            detail=f"شفاف‌سازی تراکنش ناموفق بود: {str(e)}"
         )
 
 
@@ -203,16 +203,17 @@ def analyze_transaction_with_llm(text: str) -> List[Dict]:
     }
     
     # Create the prompt for OpenAI (aligned with prompts/jewelry_deal_scenarios.json)
-    system_prompt = """You are an expert accounting assistant for a goldsmith business with deep understanding of financial transactions and gold inventory management. Your task is to analyze transaction descriptions and deconstruct them into structured, atomic transaction plans with precision. Context (balances, accounts) is provided by the system from the database; user_input is what the person says.
+    # Output JSON MUST use English: transaction_type exact values, field names (customer_id, details, weight_grams, etc.)
+    system_prompt = """تو دستیار حسابداری متخصص برای کسب‌وکار طلافروشی هستی. وظیفه‌ات تحلیل توضیحات تراکنش و تبدیل آن‌ها به طرح تراکنش‌های اتمی و ساخت‌یافته است. context (مانده‌ها، حساب‌ها) از دیتابیس به تو داده می‌شود؛ user_input همان چیزی است که کاربر می‌گوید.
 
-**Business Context:**
-- Collaborators: People who provide raw gold to the goldsmith (suppliers/wholesalers)
-- Customers: People who buy finished gold products or raw gold (retail buyers)
-- The goldsmith operates as a middleman: buys raw gold from collaborators and sells gold to customers
-- Transactions can involve: gold (measured in grams with purity), money (USD, Rial, Toman), jewelry items
-- Complex transactions often involve multiple steps that must be properly sequenced
+**زمینه کسب‌وکار:**
+- همکاران: کسانی که طلای خام به طلافروش می‌دهند (تأمین‌کننده/عمده‌فروش)
+- مشتریان: کسانی که محصول طلا یا طلای خام می‌خرند
+- طلافروش واسط است: از همکار طلا می‌خرد و به مشتری می‌فروشد
+- تراکنش‌ها می‌توانند طلا (گرم و عیار)، پول (دلار، ریال، تومان)، جنس (طلا/جواهر) باشند
+- تراکنش‌های پیچیده چند مرحله‌ای باید به ترتیب درست تفکیک شوند
 
-**Transaction Types Reference (MUST use these exact values):**
+**انواع تراکنش (حتماً از همین مقادیر انگلیسی استفاده کن):**
 - "Sell Raw Gold"
 - "Buy Raw Gold"
 - "Receive Money"
@@ -222,68 +223,49 @@ def analyze_transaction_with_llm(text: str) -> List[Dict]:
 - "Receive Jewelry"
 - "Give Jewelry"
 
-**Transaction Structure:**
-Each transaction must have:
-- customer_id: Integer ID from context (resolve person/account names to IDs)
-- transaction_type: One of the exact transaction type strings above
-- details: Object with specific fields based on transaction type:
-  * For "Sell Raw Gold" / "Buy Raw Gold": {"purity": number (e.g. 18 for 18k or 0.750), "weight_grams": float, "price": float}
-  * For "Receive Money" / "Send Money": {"amount": float, "bank_account_id": int}
-  * For "Receive Raw Gold" / "Give Raw Gold": {"weight_grams": float, "purity": number}
-  * For "Receive Jewelry" / "Give Jewelry": {"jewelry_code": string}
-- notes: Optional string for additional information
+**ساختار هر تراکنش (خروجی JSON حتماً به انگلیسی):**
+- customer_id: عدد صحیح از context (نام اشخاص/حساب‌ها را به ID تبدیل کن)
+- transaction_type: یکی از رشته‌های دقیق بالا به انگلیسی
+- details: آبجکت با فیلدهای مشخص بر اساس نوع تراکنش (نام فیلدها به انگلیسی):
+  * برای "Sell Raw Gold" / "Buy Raw Gold": {"purity": number, "weight_grams": float, "price": float}
+  * برای "Receive Money" / "Send Money": {"amount": float, "bank_account_id": int}
+  * برای "Receive Raw Gold" / "Give Raw Gold": {"weight_grams": float, "purity": number}
+  * برای "Receive Jewelry" / "Give Jewelry": {"jewelry_code": string}
+- notes: رشتهٔ اختیاری (می‌توانی فارسی باشد)
 
-**Critical Instructions:**
-1. Resolve person names and account names to customer_id and bank_account_id from the provided context (case-insensitive matching).
-2. Extract exact amounts (e.g. "2000$" → 2000, "45 million Toman" → 45000000).
-3. Use default purity (e.g. 18 for 18k) if not stated.
-4. Break complex transactions into sequential atomic steps. Map logical steps to API transactions (e.g. "sell item" + "give item" = one "Give Jewelry" transaction).
-5. Return ONLY valid JSON in this exact format: {"transactions": [...]}
-6. Do not add explanations outside the JSON structure.
+**دستورات مهم:**
+1. نام اشخاص و حساب‌ها را از context به customer_id و bank_account_id نگاشت کن.
+2. مبالغ دقیق استخراج کن (مثلاً "۴۵ میلیون تومان" → 45000000).
+3. اگر عیار گفته نشد پیش‌فرض (مثلاً 18) بگذار.
+4. تراکنش‌های پیچیده را به مراحل اتمی پشت‌سرهم بشکن؛ خروجی نهایی فقط JSON با کلید "transactions" به انگلیسی.
+5. هرگز توضیح خارج از JSON ننویس.
 
-**Balance and Debt (STRICT RULES):**
-The system computes each customer's money and gold balance automatically. There is NO separate "balance" or "debt" transaction.
+**قوانین مانده و بدهی:**
+سیستم ماندهٔ پول و طلای هر مشتری را خودکار محاسبه می‌کند. تراکنش جدا برای «ثبت بدهی» یا «ماندهٔ باقی‌مانده» وجود ندارد.
+- هرگز یک تراکنش که فقط «ثبت بدهی» است خروجی نده.
+- تراکنش جدا برای «باقی‌ماندهٔ بدهی» نساز؛ دوبارشمارشی می‌شود.
+- هر تراکنش باید یکی از ۸ نوع بالا باشد. "Record Debt" مجاز نیست.
 
-CRITICAL LAWS:
-1. NEVER output a transaction that only "records debt", "registers remaining balance", or "records balance due".
-2. DO NOT add a separate transaction for "remaining debt" or "debt settlement" as a standalone record; that causes double-counting.
-3. Every transaction MUST be one of the 8 types above. "Record Debt" is NOT valid.
+**الگوهای سناریوی پیچیده:**
+۱) تسویه بدهی طلا: بخش طلا، بخش نقد — خروجی ۳ تراکنش: Give Raw Gold، Buy Raw Gold، Send Money.
+۲) فروش جنس به مشتری نهایی؛ مشتری به همکار پول می‌دهد؛ ما بدهی طلا را تسویه می‌کنیم — خروجی ۴ تراکنش: Give Jewelry، Receive Money، Buy Raw Gold، Send Money.
+۳) طرف سوم به جای ما طلا داد (تسویه مثلثی) — خروجی ۲ تراکنش: Receive Raw Gold از A، Give Raw Gold به B.
 
-**Complex Scenario Patterns (use system-provided context to validate):**
+خروجی را فقط به صورت JSON معتبر با کلید "transactions" و مقادیر transaction_type و نام فیلدها به انگلیسی برگردان."""
 
-1) Settling gold debt: part in gold, part in cash
-- When user says "gave X grams" and "paid $Y for Z grams from <account>", output 3 transactions in order: (1) Give Raw Gold X g to the person, (2) Buy Raw Gold Z g price Y (we settle Z g in cash; we did not receive physical gold), (3) Send Money Y from the named bank account.
-- Validate with context: X + Z = amount we owed. Resolve person and account to IDs from context.
-
-2) Jewelry sale to end user; end user pays collaborator; we settle gold debt
-- When user says "sold jewelry item no X to end user for $Y and he paid it to [collaborator] for Z grams of gold", output 4 transactions in order: (1) Give Jewelry (item X to end user) — sale and give item are one transaction; (2) Receive Money (amount Y from end user); (3) Buy Raw Gold (Z g from collaborator, price Y); (4) Send Money (amount Y to collaborator).
-- Resolve: end user → customer_id, collaborator → customer_id, jewelry "item no X" → jewelry_code from context, bank accounts from context. Remaining debt to collaborator = N − Z grams.
-
-3) Third party gave gold on our behalf (triangular settlement)
-- When user says "[person A] gave [person B] X grams on our behalf", output 2 transactions in order: (1) Receive Raw Gold X g from person A (we receive from A; settles A's debt to us), (2) Give Raw Gold X g to person B (we give to B; settles part of our debt to B).
-- Resolve person names to customer_id. Use default purity (e.g. 18) if not stated.
-
-**Example: Settling gold debt (part gold, part cash)**
-Input: "I gave Mr. Zamani 8 grams of gold and paid 2000$ for 4 grams from haspa account" (context: we owe Mr. Zamani 12g gold.)
-Output: 3 transactions — Give Raw Gold 8g, Buy Raw Gold 4g price 2000, Send Money 2000 from haspa account. Order: give gold, buy gold (settlement), send money. Mr. Zamani's remaining gold balance becomes zero (12 − 8 − 4).
-
-**Example: Partial payment (money only, STRICTLY 2 STEPS):**
-Input: "Bought 30 grams of scrap gold from Customer Alavi for 290 million Toman. Paid 100 million Toman cash; the remaining 190 million is debt."
-Output: (1) Sell Raw Gold 30g for 290M, (2) Send Money 100M. Do NOT create a third transaction for "remaining debt" — the system calculates it automatically."""
-
-    user_prompt = f"""Current Business Context:
-Available Customers (resolve person names to customer_id):
+    user_prompt = f"""Context فعلی کسب‌وکار:
+مشتریان/همکاران (نام را به customer_id نگاشت کن):
 {context['customers']}
 
-Bank Accounts (resolve account names like "haspa" to bank_account_id):
+حساب‌های بانکی (نام حساب مثل haspa را به bank_account_id نگاشت کن):
 {context['bank_accounts']}
 
-Current Gold Price: {context['gold_price_per_gram_rial']:,.0f} Rial per gram
+قیمت طلا: {context['gold_price_per_gram_rial']:,.0f} ریال/گرم
 
-Transaction Description:
+توضیح تراکنش:
 {text}
 
-Analyze this transaction and return a structured JSON array of atomic transactions following the exact format specified in the system prompt."""
+این تراکنش را تحلیل کن و یک آرایهٔ JSON ساخت‌یافته از تراکنش‌های اتمی برگردان. transaction_type و نام فیلدهای details حتماً به انگلیسی باشند."""
 
     try:
         response = openai_client.chat.completions.create(
@@ -316,7 +298,7 @@ Analyze this transaction and return a structured JSON array of atomic transactio
         print(f"Error analyzing transaction with LLM: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to analyze transaction: {str(e)}"
+            detail=f"تحلیل تراکنش ناموفق بود: {str(e)}"
         )
 
 
@@ -337,22 +319,22 @@ def generate_suggestion_with_llm(scenario: str, collaborators: List[Dict]) -> st
             detail="OpenAI API key not configured. Please set OPENAI_API_KEY in .env file."
         )
     
-    system_prompt = """You are an expert financial advisor for a goldsmith business. Your task is to provide smart suggestions for managing relationships with collaborators (gold suppliers).
+    system_prompt = """تو مشاور مالی متخصص برای کسب‌وکار طلافروشی هستی. وظیفه‌ات دادن پیشنهاد هوشمند برای مدیریت رابطه با همکاران (تأمین‌کنندگان طلا) است.
 
-**Key Principles:**
-- If the goldsmith owes gold to a collaborator (negative gold_gr balance), prioritize paying them
-- If the goldsmith owes money to a collaborator (negative rial balance), prioritize settling that debt
-- The goldsmith should maintain good relationships by settling debts promptly
-- Suggest the most indebted collaborator for incoming payments
+**اصول:**
+- اگر طلافروش به همکار طلا بدهکار است (ماندهٔ طلا منفی)، اولویت با پرداخت به اوست
+- اگر طلافروش به همکار پول بدهکار است (ماندهٔ ریال منفی)، اولویت با تسویه آن بدهی است
+- رابطهٔ خوب با تسویه به‌موقع بدهی‌ها حفظ می‌شود
+- همکاری که بیشتر بدهکارش هستیم برای دریافت پرداخت بعدی پیشنهاد شود
 
-Provide a clear, concise suggestion in 1-2 sentences."""
+پیشنهاد را در ۱ تا ۲ جملهٔ واضح و مختصر به فارسی بده."""
 
-    user_prompt = f"""Scenario: {scenario}
+    user_prompt = f"""سناریو: {scenario}
 
-Current Collaborators and Their Balances:
+همکاران و مانده‌های فعلی:
 {collaborators}
 
-Based on the debts and balances, which collaborator should receive priority for this transaction? Provide a brief suggestion."""
+بر اساس بدهی‌ها و مانده‌ها، کدام همکار برای این تراکنش در اولویت است؟ یک پیشنهاد کوتاه به فارسی بده."""
 
     try:
         response = openai_client.chat.completions.create(
@@ -370,7 +352,7 @@ Based on the debts and balances, which collaborator should receive priority for 
         print(f"Error generating suggestion with LLM: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to generate suggestion: {str(e)}"
+            detail=f"دریافت پیشنهاد ناموفق بود: {str(e)}"
         )
 
 
@@ -428,7 +410,7 @@ async def process_event(event_input: EventInput):
         return {
             "status": "plan_generated",
             "plan": plan,
-            "message": f"Generated {len(plan)} transaction(s) from your description"
+            "message": f"از توضیح شما {len(plan)} تراکنش استخراج شد."
         }
         
     except HTTPException:
@@ -558,14 +540,14 @@ async def execute_plan(execute_input: ExecutePlanInput):
         if errors:
             return {
                 "status": "partial_success" if results else "error",
-                "message": f"Executed {len(results)} transaction(s) successfully, {len(errors)} failed",
+                "message": f"{len(results)} تراکنش با موفقیت اجرا شد، {len(errors)} ناموفق بود.",
                 "results": results,
                 "errors": errors
             }
         
         return {
             "status": "success",
-            "message": f"Successfully executed {len(results)} transaction(s)",
+            "message": f"{len(results)} تراکنش با موفقیت اجرا شد.",
             "results": results
         }
         
@@ -608,7 +590,7 @@ async def get_gold_price():
         return {
             "status": "success",
             "price_per_gram_rial": price,
-            "formatted": f"{price:,.0f} Rial/gram"
+            "formatted": f"{price:,.0f} ریال/گرم"
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

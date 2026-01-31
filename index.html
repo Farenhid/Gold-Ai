@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Gold Accounting</title>
+    <title>حسابداری هوشمند طلا</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         /* CSS Custom Properties for Liquid Gold Animation */
         @property --pos-x {
@@ -158,11 +158,12 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+            font-family: 'Vazirmatn', 'Inter', sans-serif;
             overflow-x: hidden;
             min-height: 100vh;
             position: relative;
             color: var(--text-primary);
+            text-align: right;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             background: var(--bg-light);
@@ -233,6 +234,10 @@
         header {
             text-align: center;
             margin-bottom: 80px;
+        }
+
+        [dir="rtl"] .button-group {
+            flex-direction: row-reverse;
         }
 
         header h1 {
@@ -670,6 +675,13 @@
             margin-top: 24px;
             display: none;
         }
+        [dir="rtl"] .result-box {
+            border-left: none;
+            border-right: 3px solid var(--primary);
+        }
+        [dir="rtl"] .result-box.clarification-box {
+            border-right-color: var(--accent-blue);
+        }
 
         .result-box.active {
             display: block;
@@ -803,24 +815,24 @@
 
     <div class="container">
         <header>
-            <h1>Smart Gold Accounting</h1>
-            <p>AI-Powered Transaction Management</p>
+            <h1>حسابداری هوشمند طلا</h1>
+            <p>مدیریت تراکنش با هوش مصنوعی</p>
         </header>
 
         <!-- Info Section -->
         <div class="info-section">
-            <h3>System Status</h3>
+            <h3>وضعیت سیستم</h3>
             <div class="info-grid">
                 <div class="info-item">
-                    <h3>Gold Price</h3>
+                    <h3>قیمت طلا</h3>
                     <p id="goldPrice">—</p>
                 </div>
                 <div class="info-item">
-                    <h3>Collaborators</h3>
+                    <h3>همکاران</h3>
                     <p id="collaboratorCount">—</p>
                 </div>
                 <div class="info-item">
-                    <h3>Customers</h3>
+                    <h3>مشتریان</h3>
                     <p id="customerCount">—</p>
                 </div>
             </div>
@@ -829,57 +841,57 @@
         <!-- Main Action Buttons -->
         <div class="main-buttons">
             <button class="gradient-button" onclick="showEventForm()">
-                Register Event
+                ثبت رویداد
             </button>
             <button class="gradient-button gradient-button-variant" onclick="showSuggestionForm()">
-                Get Suggestion
+                دریافت پیشنهاد
             </button>
             <button class="btn btn-secondary" onclick="showAccounts()">
-                View Accounts
+                مشاهده حساب‌ها
             </button>
         </div>
 
         <!-- Event Form Card -->
         <div id="eventCard" class="card">
-            <h2>Register Transaction Event</h2>
+            <h2>ثبت رویداد تراکنش</h2>
             <div class="form-group">
-                <label for="eventText">Describe the transaction</label>
-                <textarea id="eventText" placeholder="Example: Customer Rezaei bought 4 grams of finished gold for 45 million Toman. Pay this money to Collaborator Akbari to settle 4.5 grams of gold debt."></textarea>
+                <label for="eventText">تراکنش را شرح دهید</label>
+                <textarea id="eventText" placeholder="مثال: مشتری رضایی ۴ گرم طلای آب‌شده به مبلغ ۴۵ میلیون تومان خرید. این پول را به همکار اکبری بپرداز تا ۴/۵ گرم بدهی طلا تسویه شود."></textarea>
                 
                 <div class="example-text" onclick="fillExample('event')">
-                    Use example: "Customer Rezaei bought 4 grams of finished gold for 45 million Toman..."
+                    استفاده از مثال: «مشتری رضایی ۴ گرم طلای آب‌شده به مبلغ ۴۵ میلیون تومان خرید...»
                 </div>
             </div>
             <div class="button-group">
                 <button class="gradient-button gradient-button-small" onclick="analyzeEvent()">
                     <span id="analyzeSpinner"></span>
-                    Analyze Transaction
+                    تحلیل تراکنش
                 </button>
-                <button class="btn btn-tertiary btn-small" onclick="hideAllCards()">Cancel</button>
+                <button class="btn btn-tertiary btn-small" onclick="hideAllCards()">انصراف</button>
             </div>
 
             <!-- Clarification Section -->
-            <div id="clarificationSection" class="result-box" style="border-left-color: var(--accent-blue);">
-                <h3>Clarify Transaction</h3>
+            <div id="clarificationSection" class="result-box clarification-box">
+                <h3>شفاف‌سازی تراکنش</h3>
                 <p style="margin-bottom: 16px; color: var(--text-secondary); font-size: 0.9rem;">
-                    Please select the interpretation that matches your intent:
+                    لطفاً تفسیری را که با منظور شما یکی است انتخاب کنید:
                 </p>
                 <div id="interpretationOptions" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;"></div>
                 
                 <div class="interpretation-item" style="margin-top: 16px;">
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-direction: row-reverse;">
                         <input type="radio" name="interpretation" value="other" id="optOther" onchange="toggleOtherText(true)">
-                        <label for="optOther" style="margin: 0; cursor: pointer;">Other (write your own)</label>
+                        <label for="optOther" style="margin: 0; cursor: pointer;">سایر (خودم می‌نویسم)</label>
                     </div>
-                    <textarea id="otherText" placeholder="Describe exactly what happened..." style="display: none; min-height: 80px; margin-top: 8px;"></textarea>
+                    <textarea id="otherText" placeholder="دقیقاً بنویسید چه اتفاقی افتاده..." style="display: none; min-height: 80px; margin-top: 8px;"></textarea>
                 </div>
 
                 <div class="button-group" style="margin-top: 24px;">
                     <button class="gradient-button gradient-button-small" onclick="confirmClarification()">
                         <span id="clarifySpinner"></span>
-                        Proceed
+                        ادامه
                     </button>
-                    <button class="btn btn-tertiary btn-small" onclick="resetClarification()">Back</button>
+                    <button class="btn btn-tertiary btn-small" onclick="resetClarification()">بازگشت</button>
                 </div>
             </div>
 
@@ -889,21 +901,21 @@
 
         <!-- Suggestion Form Card -->
         <div id="suggestionCard" class="card">
-            <h2>Get Smart Suggestion</h2>
+            <h2>دریافت پیشنهاد هوشمند</h2>
             <div class="form-group">
-                <label for="scenarioText">Describe your scenario</label>
-                <textarea id="scenarioText" placeholder="Example: A customer wants to buy 45 million Toman worth of gold"></textarea>
+                <label for="scenarioText">سناریو را شرح دهید</label>
+                <textarea id="scenarioText" placeholder="مثال: یک مشتری می‌خواهد به ارزش ۴۵ میلیون تومان طلا بخرد"></textarea>
                 
                 <div class="example-text" onclick="fillExample('suggestion')">
-                    Use example: "A customer wants to buy 45 million Toman worth of gold"
+                    استفاده از مثال: «یک مشتری می‌خواهد به ارزش ۴۵ میلیون تومان طلا بخرد»
                 </div>
             </div>
             <div class="button-group">
                 <button class="gradient-button gradient-button-small gradient-button-variant" onclick="getSuggestion()">
                     <span id="suggestionSpinner"></span>
-                    Get Suggestion
+                    دریافت پیشنهاد
                 </button>
-                <button class="btn btn-tertiary btn-small" onclick="hideAllCards()">Cancel</button>
+                <button class="btn btn-tertiary btn-small" onclick="hideAllCards()">انصراف</button>
             </div>
 
             <!-- Results -->
@@ -912,9 +924,9 @@
 
         <!-- Accounts View Card -->
         <div id="accountsCard" class="card">
-            <h2>Account Overview</h2>
+            <h2>خلاصه حساب‌ها</h2>
             <div id="accountsResults"></div>
-            <button class="btn btn-tertiary btn-small" onclick="hideAllCards()" style="margin-top: 24px;">Close</button>
+            <button class="btn btn-tertiary btn-small" onclick="hideAllCards()" style="margin-top: 24px;">بستن</button>
         </div>
     </div>
 
@@ -981,9 +993,9 @@
 
         function fillExample(type) {
             if (type === 'event') {
-                document.getElementById('eventText').value = "Customer Rezaei bought 4 grams of finished gold for 45 million Toman. Pay this money to Collaborator Akbari to settle 4.5 grams of gold debt.";
+                document.getElementById('eventText').value = "مشتری رضایی ۴ گرم طلای آب‌شده به مبلغ ۴۵ میلیون تومان خرید. این پول را به همکار اکبری بپرداز تا ۴/۵ گرم بدهی طلا تسویه شود.";
             } else if (type === 'suggestion') {
-                document.getElementById('scenarioText').value = "A customer wants to buy 45 million Toman worth of gold";
+                document.getElementById('scenarioText').value = "یک مشتری می‌خواهد به ارزش ۴۵ میلیون تومان طلا بخرد";
             }
         }
 
@@ -991,7 +1003,7 @@
             const text = document.getElementById('eventText').value.trim();
             
             if (!text) {
-                alert('Please enter a transaction description');
+                alert('لطفاً توضیح تراکنش را وارد کنید.');
                 return;
             }
 
@@ -1015,10 +1027,10 @@
                 if (response.ok) {
                     displayClarificationOptions(data.interpretations);
                 } else {
-                    displayError('eventResults', data.detail || 'Failed to clarify transaction');
+                    displayError('eventResults', data.detail || 'شفاف‌سازی تراکنش ناموفق بود.');
                 }
             } catch (error) {
-                displayError('eventResults', 'Network error: ' + error.message);
+                displayError('eventResults', 'خطای شبکه: ' + error.message);
             } finally {
                 spinner.innerHTML = '';
             }
@@ -1040,10 +1052,10 @@
                 };
                 
                 div.innerHTML = `
-                    <div style="display: flex; gap: 12px; align-items: flex-start;">
+                    <div style="display: flex; gap: 12px; align-items: flex-start; flex-direction: row-reverse;">
                         <input type="radio" name="interpretation" value="${index}" id="${id}" ${index === 0 ? 'checked' : ''} onchange="toggleOtherText(false)" style="margin-top: 4px; width: auto;">
-                        <div>
-                            <label for="${id}" style="font-weight: 600; cursor: pointer; color: var(--text-primary); margin-bottom: 4px; display: block;">Option ${index + 1}</label>
+                        <div style="text-align: right;">
+                            <label for="${id}" style="font-weight: 600; cursor: pointer; color: var(--text-primary); margin-bottom: 4px; display: block;">گزینه ${index + 1}</label>
                             <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">${opt.text}</p>
                         </div>
                     </div>
@@ -1071,7 +1083,7 @@
         async function confirmClarification() {
             const selected = document.querySelector('input[name="interpretation"]:checked');
             if (!selected) {
-                alert('Please select an option');
+                alert('لطفاً یک گزینه انتخاب کنید.');
                 return;
             }
 
@@ -1079,7 +1091,7 @@
             if (selected.value === 'other') {
                 finalText = document.getElementById('otherText').value.trim();
                 if (!finalText) {
-                    alert('Please enter your description');
+                    alert('لطفاً توضیح خود را بنویسید.');
                     return;
                 }
             } else {
@@ -1108,10 +1120,10 @@
                     document.getElementById('clarificationSection').classList.remove('active');
                     displayEventResults(data);
                 } else {
-                    displayError('eventResults', data.detail || 'Failed to process event');
+                    displayError('eventResults', data.detail || 'پردازش تراکنش ناموفق بود.');
                 }
             } catch (error) {
-                displayError('eventResults', 'Network error: ' + error.message);
+                displayError('eventResults', 'خطای شبکه: ' + error.message);
             } finally {
                 spinner.innerHTML = '';
             }
@@ -1122,7 +1134,7 @@
             const text = document.getElementById('eventText').value.trim();
             
             if (!text) {
-                alert('Please enter a transaction description');
+                alert('لطفاً توضیح تراکنش را وارد کنید.');
                 return;
             }
 
@@ -1144,10 +1156,10 @@
                     currentPlan = data.plan;
                     displayEventResults(data);
                 } else {
-                    displayError('eventResults', data.detail || 'Failed to analyze transaction');
+                    displayError('eventResults', data.detail || 'تحلیل تراکنش ناموفق بود.');
                 }
             } catch (error) {
-                displayError('eventResults', 'Network error: ' + error.message);
+                displayError('eventResults', 'خطای شبکه: ' + error.message);
             } finally {
                 spinner.innerHTML = '';
             }
@@ -1156,14 +1168,14 @@
         function displayEventResults(data) {
             const resultsDiv = document.getElementById('eventResults');
             
-            let html = '<h3>Transaction Plan</h3>';
+            let html = '<h3>طرح تراکنش</h3>';
             html += `<p style="margin-bottom: 16px; color: var(--text-secondary); font-size: 0.875rem;">${data.message}</p>`;
             
             data.plan.forEach(item => {
                 html += `
                     <div class="transaction-item">
-                        <h4>Step ${item.step}: ${item.action}</h4>
-                        <p>${item.description || 'No additional description'}</p>
+                        <h4>مرحله ${item.step}: ${item.action}</h4>
+                        <p>${item.description || 'بدون توضیح اضافه'}</p>
                     </div>
                 `;
             });
@@ -1171,10 +1183,10 @@
             html += `
                 <div class="button-group" style="margin-top: 20px;">
                     <button class="gradient-button gradient-button-small" onclick="executePlan()">
-                        Approve & Execute
+                        تأیید و اجرا
                     </button>
                     <button class="btn btn-tertiary btn-small" onclick="document.getElementById('eventResults').classList.remove('active'); currentPlan = null;">
-                        Cancel
+                        انصراف
                     </button>
                 </div>
             `;
@@ -1185,7 +1197,7 @@
 
         async function executePlan() {
             if (!currentPlan) {
-                alert('No plan to execute');
+                alert('طرحی برای اجرا وجود ندارد.');
                 return;
             }
 
@@ -1204,21 +1216,21 @@
                     const resultsDiv = document.getElementById('eventResults');
                     resultsDiv.innerHTML = `
                         <div class="success-message">
-                            <h3>Success</h3>
+                            <h3>موفق</h3>
                             <p>${data.message}</p>
                             <p style="margin-top: 8px; font-size: 0.875rem; color: var(--text-secondary);">
-                                Executed ${data.results.length} transaction(s) successfully.
+                                ${data.results.length} تراکنش با موفقیت اجرا شد.
                             </p>
                         </div>
                         <button class="gradient-button gradient-button-small" onclick="hideAllCards(); document.getElementById('eventText').value = ''; currentPlan = null;" style="margin-top: 16px;">
-                            Done
+                            انجام شد
                         </button>
                     `;
                 } else {
-                    displayError('eventResults', data.detail || 'Failed to execute plan');
+                    displayError('eventResults', data.detail || 'اجرای طرح ناموفق بود.');
                 }
             } catch (error) {
-                displayError('eventResults', 'Network error: ' + error.message);
+                displayError('eventResults', 'خطای شبکه: ' + error.message);
             }
         }
 
@@ -1226,7 +1238,7 @@
             const scenario = document.getElementById('scenarioText').value.trim();
             
             if (!scenario) {
-                alert('Please enter a scenario description');
+                alert('لطفاً سناریو را شرح دهید.');
                 return;
             }
 
@@ -1247,10 +1259,10 @@
                 if (response.ok) {
                     displaySuggestionResults(data);
                 } else {
-                    displayError('suggestionResults', data.detail || 'Failed to get suggestion');
+                    displayError('suggestionResults', data.detail || 'دریافت پیشنهاد ناموفق بود.');
                 }
             } catch (error) {
-                displayError('suggestionResults', 'Network error: ' + error.message);
+                displayError('suggestionResults', 'خطای شبکه: ' + error.message);
             } finally {
                 spinner.innerHTML = '';
             }
@@ -1259,7 +1271,7 @@
         function displaySuggestionResults(data) {
             const resultsDiv = document.getElementById('suggestionResults');
             
-            let html = '<h3>Smart Suggestion</h3>';
+            let html = '<h3>پیشنهاد هوشمند</h3>';
             html += `<div style="background: var(--bg-white); padding: 18px 20px; border-radius: 12px; border: 1px solid var(--border);">`;
             html += `<p style="font-size: 0.9375rem; line-height: 1.6; color: var(--text-primary);">${data.suggestion}</p>`;
             html += `</div>`;
@@ -1268,11 +1280,11 @@
                 const acc = data.recommended_account;
                 html += `
                     <div style="margin-top: 20px;">
-                        <h4 style="color: var(--text-primary); font-weight: 600; margin-bottom: 12px; font-size: 0.875rem;">Recommended Account</h4>
+                        <h4 style="color: var(--text-primary); font-weight: 600; margin-bottom: 12px; font-size: 0.875rem;">حساب پیشنهادی</h4>
                         <div class="transaction-item">
                             <h4>${acc.name}</h4>
-                            <p>Gold: ${acc.balance.gold_gr} grams</p>
-                            <p>Rial: ${acc.balance.rial.toLocaleString()} Rial</p>
+                            <p>طلا: ${acc.balance.gold_gr} گرم</p>
+                            <p>ریال: ${acc.balance.rial.toLocaleString('fa-IR')} ریال</p>
                         </div>
                     </div>
                 `;
@@ -1289,30 +1301,30 @@
                 
                 const resultsDiv = document.getElementById('accountsResults');
                 
-                let html = '<h3 style="color: var(--text-primary); margin-bottom: 20px; font-weight: 700; font-size: 1rem; letter-spacing: -0.3px;">Collaborators</h3>';
+                let html = '<h3 style="color: var(--text-primary); margin-bottom: 20px; font-weight: 700; font-size: 1rem;">همکاران</h3>';
                 
                 const collaborators = data.accounts.filter(acc => acc.type === 'collaborator');
                 collaborators.forEach(acc => {
                     html += `
                         <div class="transaction-item">
                             <h4>${acc.name}</h4>
-                            <p><strong>Gold:</strong> ${acc.balance.gold_gr} grams</p>
-                            <p><strong>Rial:</strong> ${acc.balance.rial.toLocaleString()} Rial</p>
-                            <p><strong>USD:</strong> $${acc.balance.usd.toLocaleString()}</p>
+                            <p><strong>طلا:</strong> ${acc.balance.gold_gr} گرم</p>
+                            <p><strong>ریال:</strong> ${acc.balance.rial.toLocaleString('fa-IR')} ریال</p>
+                            <p><strong>دلار:</strong> $${acc.balance.usd.toLocaleString('fa-IR')}</p>
                         </div>
                     `;
                 });
                 
-                html += '<h3 style="color: var(--text-primary); margin: 32px 0 20px 0; font-weight: 700; font-size: 1rem; letter-spacing: -0.3px;">Customers</h3>';
+                html += '<h3 style="color: var(--text-primary); margin: 32px 0 20px 0; font-weight: 700; font-size: 1rem;">مشتریان</h3>';
                 
                 const customers = data.accounts.filter(acc => acc.type === 'customer');
                 customers.forEach(acc => {
                     html += `
                         <div class="transaction-item">
                             <h4>${acc.name}</h4>
-                            <p><strong>Gold:</strong> ${acc.balance.gold_gr} grams</p>
-                            <p><strong>Rial:</strong> ${acc.balance.rial.toLocaleString()} Rial</p>
-                            <p><strong>USD:</strong> $${acc.balance.usd.toLocaleString()}</p>
+                            <p><strong>طلا:</strong> ${acc.balance.gold_gr} گرم</p>
+                            <p><strong>ریال:</strong> ${acc.balance.rial.toLocaleString('fa-IR')} ریال</p>
+                            <p><strong>دلار:</strong> $${acc.balance.usd.toLocaleString('fa-IR')}</p>
                         </div>
                     `;
                 });
@@ -1321,7 +1333,7 @@
             } catch (error) {
                 console.error('Error loading accounts:', error);
                 document.getElementById('accountsResults').innerHTML = `
-                    <div class="error-message">Failed to load accounts</div>
+                    <div class="error-message">بارگذاری حساب‌ها ناموفق بود.</div>
                 `;
             }
         }
@@ -1330,7 +1342,7 @@
             const resultsDiv = document.getElementById(elementId);
             resultsDiv.innerHTML = `
                 <div class="error-message">
-                    <strong>Error:</strong> ${message}
+                    <strong>خطا:</strong> ${message}
                 </div>
             `;
             resultsDiv.classList.add('active');
