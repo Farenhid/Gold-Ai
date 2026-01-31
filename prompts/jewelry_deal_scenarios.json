@@ -1,0 +1,142 @@
+{
+  "description": "Few-shot scenarios for jewelry/gold deals. Context (balances, accounts) is provided by the system at runtime; user_input is what the person says.",
+  "transaction_types_reference": [
+    "Sell Raw Gold",
+    "Buy Raw Gold",
+    "Receive Money",
+    "Send Money",
+    "Receive Raw Gold",
+    "Give Raw Gold",
+    "Receive Jewelry",
+    "Give Jewelry"
+  ],
+  "scenarios": [
+    {
+      "id": "debt_settlement_gold_and_cash",
+      "title": "Settling gold debt: part in gold, part in cash",
+      "context": {
+        "person": "Mr. Zamani",
+        "person_role": "collaborator",
+        "prior_state": "We owe Mr. Zamani 12 grams of gold (his balance: +12g gold). Context is provided by the system from the database, not stated by the user."
+      },
+      "user_input": "I gave MR. zamani 8 grams of gold and paid 2000$ for 4 grams from haspa account",
+      "reasoning": "User settles the full 12g debt: (1) 8g by giving physical gold → Give Raw Gold 8g. (2) Remaining 4g settled in cash → Buy Raw Gold 4g, price 2000, and Send Money 2000 from haspa. Order: give gold, buy gold (settlement), send money.",
+      "expected_transaction_count": 3,
+      "expected_output": [
+        {
+          "customer_id": "<Zamani_customer_id>",
+          "transaction_type": "Give Raw Gold",
+          "details": { "weight_grams": 8, "purity": 18 },
+          "notes": "Gave 8g gold to Mr. Zamani; part of 12g debt settlement"
+        },
+        {
+          "customer_id": "<Zamani_customer_id>",
+          "transaction_type": "Buy Raw Gold",
+          "details": { "purity": 18, "weight_grams": 4, "price": 2000 },
+          "notes": "Settled remaining 4g debt by cash; we did not receive physical gold"
+        },
+        {
+          "customer_id": "<Zamani_customer_id>",
+          "transaction_type": "Send Money",
+          "details": { "amount": 2000, "bank_account_id": "<haspa_account_id>" },
+          "notes": "Paid 2000 USD from Haspa account for 4g settlement"
+        }
+      ],
+      "outcome": "Mr. Zamani's remaining gold balance is zero (12 − 8 − 4).",
+      "rules_for_ai": [
+        "When user says 'gave X grams' and 'paid $Y for Z grams from <account>', output 3 transactions: Give Raw Gold X g, Buy Raw Gold Z g price Y, Send Money Y from named account.",
+        "Use system-provided context (balances) to validate: X + Z = owed amount.",
+        "Resolve person name and account name to IDs from context."
+      ]
+    },
+    {
+      "id": "jewelry_sale_settle_debt_via_collaborator",
+      "title": "Sell jewelry to end user; end user pays collaborator; we settle gold debt",
+      "context": {
+        "person_collaborator": "Mr. Zamani",
+        "prior_state": "We owe Mr. Zamani 12 grams of gold (his balance: +12g gold). Context from system. After settling 8g, remaining = 4g.",
+        "end_user": "End user (customer) who buys the jewelry.",
+        "jewelry": "Jewelry item no 12 (use jewelry_code from context, e.g. \"12\" or \"ITEM-12\")."
+      },
+      "user_input": "We sold jewelry item no 12 to an end user for 3000$ and he paid it to mr zamani for 8 grams of gold",
+      "reasoning": "Five logical steps: (1) Sell item to end user → record the sale. (2) Give item to end user → hand over jewelry. (3) Get 3000 from end user → we receive the payment (or end user pays Zamani directly; see below). (4) Buy 8 grams from Mr. Zamani → we settle 8g of our debt (we did not receive physical gold). (5) Pay 3000 to Mr. Zamani → the cash goes to him. In the API, 'sell' and 'give item' are one transaction: Give Jewelry (item 12 to end user). So we output 4 API transactions: Give Jewelry, Receive Money (3000 from end user), Buy Raw Gold (8g from Zamani, price 3000), Send Money (3000 to Zamani). Order: give item → receive money → buy 8g → send money. If end user paid Zamani directly, we may still record Receive Money (we received the sale consideration) and Send Money (we paid Zamani) so our books balance.",
+      "expected_transaction_count": 5,
+      "logical_steps": [
+        "1. Sell item to end user",
+        "2. Give item to end user",
+        "3. Get 3000$ from end user",
+        "4. Buy 8 grams from Mr. Zamani",
+        "5. Pay 3000$ to Mr. Zamani"
+      ],
+      "api_note": "Steps 1 and 2 map to one Give Jewelry transaction (sale = give item). So 5 logical steps → 4 API transactions.",
+      "expected_output": [
+        {
+          "customer_id": "<end_user_customer_id>",
+          "transaction_type": "Give Jewelry",
+          "details": { "jewelry_code": "<jewelry_code_item_12>" },
+          "notes": "Sold jewelry item no 12 to end user; give item to end user (steps 1+2)"
+        },
+        {
+          "customer_id": "<end_user_customer_id>",
+          "transaction_type": "Receive Money",
+          "details": { "amount": 3000, "bank_account_id": "<account_where_end_user_paid>" },
+          "notes": "Get 3000$ from end user (sale payment)"
+        },
+        {
+          "customer_id": "<Zamani_customer_id>",
+          "transaction_type": "Buy Raw Gold",
+          "details": { "purity": 18, "weight_grams": 8, "price": 3000 },
+          "notes": "Buy 8 grams from Mr. Zamani (settle 8g debt; we did not receive physical gold)"
+        },
+        {
+          "customer_id": "<Zamani_customer_id>",
+          "transaction_type": "Send Money",
+          "details": { "amount": 3000, "bank_account_id": "<account_used_to_pay_Zamani>" },
+          "notes": "Pay 3000$ to Mr. Zamani for 8g settlement"
+        }
+      ],
+      "outcome": "Jewelry item no 12 is sold (out of our stock). We owed Mr. Zamani 12g; we settled 8g with the 3000$ payment. Mr. Zamani's remaining gold balance with us: 12 − 8 = 4 grams.",
+      "rules_for_ai": [
+        "When user says 'sold jewelry item no X to end user for $Y and he paid it to [collaborator] for Z grams of gold', output in order: (1) Give Jewelry (item X to end user) — this is both 'sell' and 'give item'; (2) Receive Money (amount Y from end user); (3) Buy Raw Gold (Z g from collaborator, price Y); (4) Send Money (amount Y to collaborator).",
+        "Resolve: end user → customer_id; collaborator (e.g. Mr. Zamani) → customer_id; jewelry 'item no 12' → jewelry_code from context; bank accounts from context.",
+        "Use system-provided context: we owe collaborator N grams; after this deal we settle Z grams, so remaining debt = N − Z. Here: 12 − 8 = 4 grams owed to Mr. Zamani."
+      ]
+    },
+    {
+      "id": "triangular_settlement_gold_on_our_behalf",
+      "title": "Third party gave gold on our behalf (triangular settlement)",
+      "context": {
+        "we_owe": "We owe Mr. Zamani 10 grams of gold (his balance: +10g).",
+        "owes_us": "Mr. Talebi owes us 8 grams of gold (his balance: −8g with us).",
+        "note": "Context from system."
+      },
+      "user_input": "mr. talebi gave mr. zamani 8 grams on us behalf",
+      "reasoning": "Talebi gave 8g to Zamani on our behalf: we effectively (1) receive 8g from Talebi (settles his debt to us) and (2) give 8g to Zamani (settles part of our debt to him). So 2 transactions: Receive Raw Gold 8g from Talebi, then Give Raw Gold 8g to Zamani.",
+      "expected_transaction_count": 2,
+      "logical_steps": [
+        "1. Get 8 grams from Mr. Talebi (we receive 8g; settles Talebi's debt to us)",
+        "2. Give 8 grams to Mr. Zamani (we give 8g; settles part of our debt to him)"
+      ],
+      "expected_output": [
+        {
+          "customer_id": "<Talebi_customer_id>",
+          "transaction_type": "Receive Raw Gold",
+          "details": { "weight_grams": 8, "purity": 18 },
+          "notes": "Mr. Talebi gave 8g on our behalf; we receive 8g from Mr. Talebi (settles his debt to us)"
+        },
+        {
+          "customer_id": "<Zamani_customer_id>",
+          "transaction_type": "Give Raw Gold",
+          "details": { "weight_grams": 8, "purity": 18 },
+          "notes": "Give 8g to Mr. Zamani on our behalf (Talebi gave him; settles part of our debt)"
+        }
+      ],
+      "outcome": "We have nothing open with Mr. Talebi (his 8g debt to us is settled). We owe Mr. Zamani only 2 grams (10 − 8 = 2).",
+      "rules_for_ai": [
+        "When user says '[person A] gave [person B] X grams on us behalf' (or 'on our behalf'), output 2 transactions in order: (1) Receive Raw Gold X g from person A (we get the gold from A; settles A's debt to us); (2) Give Raw Gold X g to person B (we give the gold to B; settles part of our debt to B).",
+        "Use system-provided context: we owe B N grams; A owes us M grams. After this deal: A's balance with us = 0 (if M = X); we owe B only N − X grams. Here: Talebi 0 open, we owe Zamani 10 − 8 = 2g.",
+        "Resolve person names to customer_id from context. Use default purity (e.g. 18) if not stated."
+      ]
+    }
+  ]
+}
