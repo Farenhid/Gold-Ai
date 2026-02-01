@@ -315,11 +315,16 @@ def analyze_transaction_with_llm(text: str) -> List[Dict]:
     customers = adapter.get_accounts(account_type='customer')
     gold_price = adapter.get_live_gold_price()
     
-    # Build context for the LLM with customer_id mapping
+    # Build context for the LLM with customer_id mapping (mock uses string ids e.g. u1, c1)
     customer_list = []
     for customer in customers + collaborators:
+        raw_id = customer['id']
+        try:
+            cid = int(raw_id) if isinstance(raw_id, (int, float)) or str(raw_id).isdigit() else raw_id
+        except (TypeError, ValueError):
+            cid = raw_id
         customer_list.append({
-            "customer_id": int(customer['id']),
+            "customer_id": cid,
             "name": customer['name'],
             "type": customer['type'],
             "balance": customer['balance']

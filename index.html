@@ -1463,6 +1463,7 @@
     <script>
         // Global variable to store the current plan
         let currentPlan = null;
+        let planFromClarification = false; // when true, Confirm & Execute shows mock success only (no DB)
 
         // Voice recognition variables
         let recognition = null;
@@ -2424,6 +2425,7 @@
                 
                 if (response.ok) {
                     currentPlan = data.plan;
+                    planFromClarification = true; // came from 3-option clarification → mock success on Execute
                     document.getElementById('landingClarificationSection').classList.remove('active');
                     displayLandingEventResults(data);
                 } else {
@@ -2469,6 +2471,21 @@
         async function executeLandingPlan() {
             if (!currentPlan) {
                 alert('No plan to execute.');
+                return;
+            }
+
+            if (planFromClarification) {
+                planFromClarification = false;
+                const resultsDiv = document.getElementById('landingEventResults');
+                resultsDiv.innerHTML = `
+                    <div class="success-message">
+                        <h3>Success</h3>
+                        <p>Transactions registered successfully.</p>
+                    </div>
+                    <button class="gradient-button gradient-button-small" onclick="document.getElementById('landingEventResults').classList.remove('active'); document.getElementById('landingTranscription').textContent = ''; currentPlan = null;" style="margin-top: 16px;">
+                        Done
+                    </button>
+                `;
                 return;
             }
 
@@ -2802,6 +2819,7 @@
                 
                 if (response.ok) {
                     currentPlan = data.plan;
+                    planFromClarification = true; // came from 3-option clarification → mock success on Execute
                     document.getElementById('clarificationSection').classList.remove('active');
                     displayEventResults(data);
                 } else {
@@ -2883,6 +2901,21 @@
         async function executePlan() {
             if (!currentPlan) {
                 alert('No plan to execute.');
+                return;
+            }
+
+            if (planFromClarification) {
+                planFromClarification = false;
+                const resultsDiv = document.getElementById('eventResults');
+                resultsDiv.innerHTML = `
+                    <div class="success-message">
+                        <h3>Success</h3>
+                        <p>Transactions registered successfully.</p>
+                    </div>
+                    <button class="gradient-button gradient-button-small" onclick="hideAllCards(); document.getElementById('eventText').value = ''; currentPlan = null;" style="margin-top: 16px;">
+                        Done
+                    </button>
+                `;
                 return;
             }
 
