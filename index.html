@@ -8,13 +8,23 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script type="module">
-        // Import OGL as ES module
+        // Import OGL as ES module (fallback for Spline)
         import * as OGL from 'https://cdn.skypack.dev/ogl@1.0.6';
         window.OGL = OGL;
-        // Initialize orb after OGL loads
+    </script>
+    <script type="module">
+        // Import Spline Runtime
+        import { Application } from 'https://unpkg.com/@splinetool/runtime@1.9.54/build/runtime.js';
+        window.SplineRuntime = { Application };
+        // Initialize both Spline robot and WebGL orb after load
         window.addEventListener('load', () => {
+            // Initialize WebGL orb inside the orbit button
             if (typeof window.initializeWebGLOrb === 'function') {
                 window.initializeWebGLOrb();
+            }
+            // Initialize Spline robot above the orbit button
+            if (typeof window.initializeSplineRobot === 'function') {
+                window.initializeSplineRobot();
             }
         });
     </script>
@@ -952,6 +962,8 @@
             flex-direction: column;
             align-items: center;
             gap: 32px;
+            position: relative;
+            z-index: 1;
         }
 
         .voice-orb-wrapper {
@@ -971,6 +983,52 @@
             width: 100%;
             height: 100%;
             border-radius: 50%;
+        }
+
+        /* Spline Robot Container (full-screen background) */
+        #splineRobotContainer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        #splineCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent !important;
+        }
+
+        .spline-loader {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .spline-loader .loading {
+            width: 50px;
+            height: 50px;
+            border-width: 4px;
+            border-color: rgba(37, 99, 235, 0.3);
+            border-top-color: #2563eb;
         }
 
         .orbit-btn-overlay {
@@ -1160,6 +1218,14 @@
     <div class="container">
         <!-- Voice-First Landing View (default) -->
         <div id="voiceLandingView" class="voice-landing-container">
+            <!-- Spline Robot (full-screen background) -->
+            <div id="splineRobotContainer">
+                <canvas id="splineCanvas"></canvas>
+                <div id="splineLoader" class="spline-loader">
+                    <span class="loading"></span>
+                </div>
+            </div>
+            
             <div class="orbit-container">
                 <div id="voiceOrbContainer" class="voice-orb-wrapper">
                     <canvas id="voiceOrbCanvas"></canvas>
@@ -1623,6 +1689,203 @@
             } catch (error) {
                 console.error('Error initializing WebGL Orb:', error);
             }
+        }
+
+        // Spline Robot variables
+        let splineApp = null;
+        let splineRobotHead = null;
+        let mouseX = 0;
+        let mouseY = 0;
+        let currentX = 0;
+        let currentY = 0;
+        const mouseDamping = 0.1;
+
+        // Initialize Spline Robot (NEXBOT)
+        function initializeSplineRobot() {
+            // #region agent log
+            fetch('http://127.0.0.1:7249/ingest/d5ac9db6-882a-4da1-b1f2-7193879c7f90',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:1710',message:'initializeSplineRobot ENTRY',data:{timestamp:Date.now()},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H5'})}).catch(()=>{});
+            // #endregion
+            
+            const canvas = document.getElementById('splineCanvas');
+            const loader = document.getElementById('splineLoader');
+            
+            // #region agent log
+            fetch('http://127.0.0.1:7249/ingest/d5ac9db6-882a-4da1-b1f2-7193879c7f90',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:1716',message:'Canvas and loader state',data:{canvasExists:!!canvas,loaderExists:!!loader,canvasWidth:canvas?.width,canvasHeight:canvas?.height},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H5'})}).catch(()=>{});
+            // #endregion
+            
+            if (!canvas) {
+                console.warn('Spline canvas not available');
+                return;
+            }
+
+            // Check if Spline Runtime is loaded
+            const runtimeAvailable = typeof window.SplineRuntime !== 'undefined' && window.SplineRuntime.Application;
+            // #region agent log
+            fetch('http://127.0.0.1:7249/ingest/d5ac9db6-882a-4da1-b1f2-7193879c7f90',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:1726',message:'Spline Runtime check',data:{runtimeAvailable:runtimeAvailable,typeofSplineRuntime:typeof window.SplineRuntime,hasApplication:window.SplineRuntime?.Application !== undefined},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2'})}).catch(()=>{});
+            // #endregion
+            
+            if (!runtimeAvailable) {
+                console.warn('Spline Runtime not available');
+                if (loader) {
+                    loader.innerHTML = '<p style="color: #ef4444; font-size: 0.875rem;">Failed to load 3D runtime</p>';
+                }
+                return;
+            }
+
+            const { Application } = window.SplineRuntime;
+            
+            try {
+                splineApp = new Application(canvas);
+                // #region agent log
+                fetch('http://127.0.0.1:7249/ingest/d5ac9db6-882a-4da1-b1f2-7193879c7f90',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:1742',message:'Spline Application created',data:{splineAppCreated:!!splineApp},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2'})}).catch(()=>{});
+                // #endregion
+                
+                // NEXBOT Robot Scene URL
+                // 
+                // ⚠️ IMPORTANT: To use your NEXBOT robot, you MUST export it first:
+                // 
+                // Step 1: Open the NEXBOT scene in Spline
+                //         https://app.spline.design/community/file/615b9422-9985-43f6-8593-d7d7bc3b0be1
+                // 
+                // Step 2: Click "Remix" button (top-right) to open it in the editor
+                // 
+                // Step 3: In the editor, go to: Export → Code → Select "Vanilla JS"
+                //         This will give you a URL like: https://prod.spline.design/XXXXX/scene.splinecode
+                //         (XXXXX will be a different ID than the community file ID)
+                // 
+                // Step 4: Copy that URL and replace the robotSceneUrl below
+                // 
+                // Using the robot scene from your provided URL:
+                const robotSceneUrl = 'https://prod.spline.design/RrXTmUVCKmfC3Eb3/scene.splinecode';
+                
+                // #region agent log
+                fetch('http://127.0.0.1:7249/ingest/d5ac9db6-882a-4da1-b1f2-7193879c7f90',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:1758',message:'Starting scene load',data:{robotSceneUrl:robotSceneUrl},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1,H4'})}).catch(()=>{});
+                // #endregion
+                
+                splineApp.load(robotSceneUrl)
+                    .then(() => {
+                        // #region agent log
+                        fetch('http://127.0.0.1:7249/ingest/d5ac9db6-882a-4da1-b1f2-7193879c7f90',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:1765',message:'Scene load SUCCESS',data:{success:true},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1,H4'})}).catch(()=>{});
+                        // #endregion
+                        console.log('Spline scene loaded successfully');
+                        
+                        // Transparent background: only the robot visible (official API)
+                        try {
+                            if (typeof splineApp.setBackgroundColor === 'function') {
+                                splineApp.setBackgroundColor('transparent');
+                            } else if (splineApp.renderer && typeof splineApp.renderer.setClearColor === 'function') {
+                                splineApp.renderer.setClearColor(0x000000, 0);
+                            }
+                        } catch (e) {
+                            console.warn('Could not set Spline transparent background:', e);
+                        }
+                        
+                        // Hide loader
+                        if (loader) {
+                            loader.style.display = 'none';
+                        }
+                        
+                        // Try to find the robot head object for mouse follow
+                        // Search for common head/face object names in NEXBOT
+                        const possibleNames = [
+                            'Head', 'head', 'HEAD',
+                            'Face', 'face', 'FACE',
+                            'Robot_Head', 'RobotHead', 'robot_head',
+                            'NEXBOT', 'nexbot', 'Nexbot',
+                            'Character', 'character', 'Robot', 'robot',
+                            'Body', 'body' // Sometimes the whole body follows
+                        ];
+                        
+                        for (const name of possibleNames) {
+                            try {
+                                splineRobotHead = splineApp.findObjectByName(name);
+                                if (splineRobotHead) {
+                                    console.log(`Found robot object: ${name}`);
+                                    break;
+                                }
+                            } catch (e) {
+                                // Continue searching
+                            }
+                        }
+                        
+                        if (!splineRobotHead) {
+                            console.log('Robot head not found, mouse follow disabled');
+                        }
+                        
+                        // Setup mouse tracking
+                        setupMouseFollow();
+                    })
+                    .catch((error) => {
+                        // #region agent log
+                        fetch('http://127.0.0.1:7249/ingest/d5ac9db6-882a-4da1-b1f2-7193879c7f90',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:1807',message:'Scene load FAILED',data:{error:error?.message,errorType:error?.constructor?.name,errorStack:error?.stack?.substring(0,200),isCorsError:error?.message?.includes('CORS'),isNetworkError:error?.message?.includes('network')},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1,H3,H4'})}).catch(()=>{});
+                        // #endregion
+                        console.error('Error loading Spline scene:', error);
+                        if (loader) {
+                            loader.innerHTML = '<p style="color: #ef4444; font-size: 0.75rem; text-align: center;">Failed to load 3D scene</p>';
+                        }
+                    });
+                    
+            } catch (error) {
+                // #region agent log
+                fetch('http://127.0.0.1:7249/ingest/d5ac9db6-882a-4da1-b1f2-7193879c7f90',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:1822',message:'Exception during initialization',data:{error:error?.message,errorType:error?.constructor?.name},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2,H5'})}).catch(()=>{});
+                // #endregion
+                console.error('Error initializing Spline:', error);
+                if (loader) loader.style.display = 'none';
+            }
+        }
+
+        // Setup mouse follow for Spline robot
+        function setupMouseFollow() {
+            const container = document.getElementById('splineRobotContainer');
+            if (!container) return;
+            
+            // Track mouse position globally (robot is now full-screen background)
+            document.addEventListener('mousemove', (e) => {
+                // Calculate position relative to viewport center (robot is full-screen)
+                const centerX = window.innerWidth / 2;
+                const centerY = window.innerHeight / 2;
+                
+                // Normalize to -1 to 1 range for natural look-at effect
+                const maxDistance = Math.max(window.innerWidth, window.innerHeight) / 2;
+                mouseX = Math.max(-1, Math.min(1, (e.clientX - centerX) / maxDistance));
+                mouseY = Math.max(-1, Math.min(1, -(e.clientY - centerY) / maxDistance));
+            });
+            
+            // Animation loop for smooth following
+            function animateFollow() {
+                // Lerp towards target with damping
+                currentX += (mouseX - currentX) * mouseDamping;
+                currentY += (mouseY - currentY) * mouseDamping;
+                
+                // Update robot head rotation/position if available
+                if (splineRobotHead) {
+                    // Try rotation first (most common for "look at" effect)
+                    if (splineRobotHead.rotation) {
+                        splineRobotHead.rotation.y = currentX * 0.5; // Horizontal rotation
+                        splineRobotHead.rotation.x = currentY * 0.3; // Vertical rotation
+                    }
+                    // Alternative: update position
+                    else if (splineRobotHead.position) {
+                        splineRobotHead.position.x += currentX * 0.5;
+                        splineRobotHead.position.y += currentY * 0.5;
+                    }
+                }
+                
+                // Apply voice level effects (optional - can make robot react to voice)
+                if (splineRobotHead && splineRobotHead.scale) {
+                    // Scale slightly based on voice level (smooth transition)
+                    const targetScale = 1.0 + (voiceLevel * 0.1);
+                    const currentScale = splineRobotHead.scale.x || 1.0;
+                    const newScale = currentScale + (targetScale - currentScale) * 0.15;
+                    splineRobotHead.scale.x = newScale;
+                    splineRobotHead.scale.y = newScale;
+                    splineRobotHead.scale.z = newScale;
+                }
+                
+                requestAnimationFrame(animateFollow);
+            }
+            
+            animateFollow();
         }
 
         // Initialize Web Speech API
