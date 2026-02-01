@@ -33,11 +33,14 @@ adapter = SqlAlchemyAdapter()
 
 # Initialize OpenAI client
 openai_api_key = os.getenv("OPENAI_API_KEY")
-if not openai_api_key:
-    print("WARNING: OPENAI_API_KEY not found in environment. NLP features will not work.")
-    openai_client = None
+openai_client = None
+if openai_api_key:
+    try:
+        openai_client = OpenAI(api_key=openai_api_key)
+    except Exception as e:
+        print(f"WARNING: OpenAI client init failed ({e}). NLP features will not work.")
 else:
-    openai_client = OpenAI(api_key=openai_api_key)
+    print("WARNING: OPENAI_API_KEY not found in environment. NLP features will not work.")
 
 openai_model = os.getenv("OPENAI_MODEL", "gpt-5.2")  # Using most powerful model for best reasoning
 

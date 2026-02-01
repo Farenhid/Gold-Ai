@@ -7,6 +7,17 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script type="module">
+        // Import OGL as ES module
+        import * as OGL from 'https://cdn.skypack.dev/ogl@1.0.6';
+        window.OGL = OGL;
+        // Initialize orb after OGL loads
+        window.addEventListener('load', () => {
+            if (typeof window.initializeWebGLOrb === 'function') {
+                window.initializeWebGLOrb();
+            }
+        });
+    </script>
     <style>
         /* CSS Custom Properties for Liquid Gold Animation */
         @property --pos-x {
@@ -774,6 +785,296 @@
             to { transform: rotate(360deg); }
         }
 
+        /* Tab Navigation */
+        .tab-navigation {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 32px;
+            padding: 6px;
+            background: var(--surface-light);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 20px;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            background: transparent;
+            color: var(--text-secondary);
+            letter-spacing: -0.2px;
+            outline: none;
+        }
+
+        .tab-btn.active {
+            background: var(--bg-white);
+            color: var(--text-blue);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: rgba(37, 99, 235, 0.05);
+            color: var(--text-primary);
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Voice Recording Interface */
+        .voice-recorder-container {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .record-btn {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 24px;
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-blue);
+            position: relative;
+        }
+
+        .record-btn:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-blue-lg);
+        }
+
+        .record-btn:active {
+            transform: scale(0.98);
+        }
+
+        .record-btn.recording {
+            background: var(--error);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 0 20px rgba(239, 68, 68, 0);
+            }
+        }
+
+        .mic-icon {
+            font-size: 3rem;
+            user-select: none;
+        }
+
+        .recording-status {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            letter-spacing: -0.2px;
+        }
+
+        .recording-status.recording {
+            color: var(--error);
+            animation: fadeInOut 1.5s ease-in-out infinite;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .transcription-preview {
+            min-height: 100px;
+            background: var(--surface-light);
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            font-size: 0.9375rem;
+            color: var(--text-primary);
+            line-height: 1.6;
+            text-align: left;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .transcription-preview:not(:empty) {
+            border-color: var(--primary);
+            background: var(--bg-white);
+            box-shadow: var(--shadow-blue);
+        }
+
+        .transcription-preview:empty::before {
+            content: 'Your transcription will appear here...';
+            color: var(--text-tertiary);
+            font-style: italic;
+        }
+
+        /* Voice-First Landing Page */
+        .voice-landing-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px 20px;
+            position: relative;
+        }
+
+        .orbit-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 32px;
+        }
+
+        .voice-orb-wrapper {
+            width: 320px;
+            height: 320px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            filter: drop-shadow(0 10px 40px rgba(37, 99, 235, 0.3));
+        }
+
+        #voiceOrbCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        .orbit-btn-overlay {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .orbit-btn-overlay:hover {
+            transform: scale(1.05);
+        }
+
+        .orbit-btn-overlay:active {
+            transform: scale(0.98);
+        }
+
+        .orbit-mic {
+            font-size: 5rem;
+            user-select: none;
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
+            transition: all 0.3s ease;
+        }
+
+        .orbit-btn-overlay.recording .orbit-mic {
+            animation: micPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes micPulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .landing-status {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            letter-spacing: -0.3px;
+            margin: 0;
+        }
+
+        .landing-status.recording {
+            color: var(--error);
+            animation: fadeInOut 1.5s ease-in-out infinite;
+        }
+
+        .landing-status.analyzing {
+            color: var(--primary);
+        }
+
+        .landing-transcription {
+            min-height: 120px;
+            max-width: 600px;
+            width: 100%;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            font-size: 1.125rem;
+            color: var(--text-primary);
+            line-height: 1.8;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-md);
+        }
+
+        .landing-transcription:not(:empty) {
+            border-color: var(--primary);
+            background: var(--bg-white);
+            box-shadow: var(--shadow-blue);
+        }
+
+        .landing-transcription:empty::before {
+            content: 'Your words will appear here...';
+            color: var(--text-tertiary);
+            font-style: italic;
+            font-size: 1rem;
+        }
+
+        .subtle-switch-btn {
+            position: absolute;
+            bottom: 40px;
+            padding: 12px 24px;
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1.5px solid var(--border);
+            border-radius: 24px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            font-family: inherit;
+            letter-spacing: -0.1px;
+        }
+
+        .subtle-switch-btn:hover {
+            background: var(--surface);
+            border-color: var(--primary);
+            color: var(--text-blue);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .container {
@@ -803,6 +1104,33 @@
             .info-grid {
                 grid-template-columns: 1fr;
             }
+
+            .record-btn {
+                width: 100px;
+                height: 100px;
+            }
+
+            .mic-icon {
+                font-size: 2.5rem;
+            }
+
+            .voice-orb-wrapper {
+                width: 240px;
+                height: 240px;
+            }
+
+            .orbit-mic {
+                font-size: 4rem;
+            }
+
+            .landing-status {
+                font-size: 1.125rem;
+            }
+
+            .landing-transcription {
+                font-size: 1rem;
+                padding: 20px;
+            }
         }
     </style>
 </head>
@@ -814,13 +1142,35 @@
     </div>
 
     <div class="container">
-        <header>
-            <h1>Smart Gold Accounting</h1>
-            <p>Transaction management with AI</p>
-        </header>
+        <!-- Voice-First Landing View (default) -->
+        <div id="voiceLandingView" class="voice-landing-container">
+            <div class="orbit-container">
+                <div id="voiceOrbContainer" class="voice-orb-wrapper">
+                    <canvas id="voiceOrbCanvas"></canvas>
+                    <div id="landingRecordButton" class="orbit-btn-overlay" onclick="toggleLandingRecording()">
+                        <div class="orbit-mic">🎤</div>
+                    </div>
+                </div>
+                <p id="landingStatus" class="landing-status">Tap to record your transaction</p>
+                <div id="landingTranscription" class="landing-transcription"></div>
+            </div>
+            <button class="subtle-switch-btn" onclick="showDashboard()">
+                <span style="margin-right: 8px;">⚙</span> Go to Dashboard
+            </button>
+        </div>
 
-        <!-- Info Section -->
-        <div class="info-section">
+        <!-- Dashboard View (initially hidden) -->
+        <div id="dashboardView" style="display: none;">
+            <header>
+                <h1>Smart Gold Accounting</h1>
+                <p>Transaction management with AI</p>
+                <button class="subtle-switch-btn" onclick="showLandingView()" style="position: relative; margin-top: 16px;">
+                    <span style="margin-right: 8px;">🎤</span> Back to Voice
+                </button>
+            </header>
+
+            <!-- Info Section -->
+            <div class="info-section">
             <h3>System Status</h3>
             <div class="info-grid">
                 <div class="info-item">
@@ -854,20 +1204,48 @@
         <!-- Event Form Card -->
         <div id="eventCard" class="card">
             <h2>Record Transaction Event</h2>
-            <div class="form-group">
-                <label for="eventText">Describe the transaction</label>
-                <textarea id="eventText" placeholder="Example: Customer Rezaei bought 4g melted gold for 45 million. Pay this to collaborator Akbari to settle 4.5g gold debt."></textarea>
-                
-                <div class="example-text" onclick="fillExample('event')">
-                    Use example: "Customer Rezaei bought 4g melted gold for 45 million..."
+            
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+                <button class="tab-btn active" onclick="switchTab('text')">Text Input</button>
+                <button class="tab-btn" onclick="switchTab('voice')">Voice Input</button>
+            </div>
+            
+            <!-- Text Input Section -->
+            <div id="textSection" class="tab-content active">
+                <div class="form-group">
+                    <label for="eventText">Describe the transaction</label>
+                    <textarea id="eventText" placeholder="Example: Customer Rezaei bought 4g melted gold for 45 million. Pay this to collaborator Akbari to settle 4.5g gold debt."></textarea>
+                    
+                    <div class="example-text" onclick="fillExample('event')">
+                        Use example: "Customer Rezaei bought 4g melted gold for 45 million..."
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button class="gradient-button gradient-button-small" onclick="analyzeEvent()">
+                        <span id="analyzeSpinner"></span>
+                        Analyze Transaction
+                    </button>
+                    <button class="btn btn-tertiary btn-small" onclick="hideAllCards()">Cancel</button>
                 </div>
             </div>
-            <div class="button-group">
-                <button class="gradient-button gradient-button-small" onclick="analyzeEvent()">
-                    <span id="analyzeSpinner"></span>
-                    Analyze Transaction
-                </button>
-                <button class="btn btn-tertiary btn-small" onclick="hideAllCards()">Cancel</button>
+            
+            <!-- Voice Input Section -->
+            <div id="voiceSection" class="tab-content">
+                <div class="voice-recorder-container">
+                    <div id="recordButton" class="record-btn" onclick="toggleRecording()">
+                        <div class="mic-icon">🎤</div>
+                    </div>
+                    <p id="recordingStatus" class="recording-status">Tap to start recording</p>
+                    <div id="transcriptionPreview" class="transcription-preview"></div>
+                </div>
+                <div class="button-group" style="margin-top: 24px;">
+                    <button class="gradient-button gradient-button-small" onclick="analyzeEventFromVoice()">
+                        <span id="voiceAnalyzeSpinner"></span>
+                        Analyze Transaction
+                    </button>
+                    <button class="btn btn-tertiary btn-small" onclick="hideAllCards()">Cancel</button>
+                </div>
             </div>
 
             <!-- Clarification Section -->
@@ -928,17 +1306,621 @@
             <div id="accountsResults"></div>
             <button class="btn btn-tertiary btn-small" onclick="hideAllCards()" style="margin-top: 24px;">Close</button>
         </div>
+        </div>
+        <!-- End Dashboard View -->
     </div>
 
     <script>
         // Global variable to store the current plan
         let currentPlan = null;
 
-        // Load initial data
-        document.addEventListener('DOMContentLoaded', function() {
-            loadGoldPrice();
-            loadAccountCounts();
-        });
+        // Voice recognition variables
+        let recognition = null;
+        let isRecording = false;
+        let finalTranscript = '';
+        let isLandingPage = true;
+
+        // WebGL Orb variables
+        let orbRenderer = null;
+        let orbProgram = null;
+        let orbAnimationFrame = null;
+        let voiceLevel = 0;
+        let audioContext = null;
+        let analyser = null;
+        let microphone = null;
+        let dataArray = null;
+        let mediaStream = null;
+
+        // Initialize WebGL Orb
+        function initializeWebGLOrb() {
+            const canvas = document.getElementById('voiceOrbCanvas');
+            if (!canvas) {
+                console.warn('Canvas not available');
+                return;
+            }
+
+            // Check if OGL is loaded
+            if (typeof OGL === 'undefined' || !window.OGL) {
+                console.warn('OGL library not available, will render fallback');
+                // Render a simple CSS fallback
+                const container = document.getElementById('voiceOrbContainer');
+                if (container) {
+                    canvas.style.background = 'linear-gradient(135deg, #3B82F6 0%, #2563EB 50%, #1E40AF 100%)';
+                }
+                return;
+            }
+
+            const { Renderer, Program, Mesh, Triangle, Vec3 } = OGL;
+
+            // Vertex Shader
+            const vertexShader = `
+                precision highp float;
+                attribute vec2 position;
+                attribute vec2 uv;
+                varying vec2 vUv;
+                void main() {
+                    vUv = uv;
+                    gl_Position = vec4(position, 0.0, 1.0);
+                }
+            `;
+
+            // Fragment Shader (adapted for blue theme)
+            const fragmentShader = `
+                precision highp float;
+
+                uniform float iTime;
+                uniform vec3 iResolution;
+                uniform float hover;
+                uniform float rot;
+                uniform float hoverIntensity;
+                varying vec2 vUv;
+
+                vec3 hash33(vec3 p3) {
+                    p3 = fract(p3 * vec3(0.1031, 0.11369, 0.13787));
+                    p3 += dot(p3, p3.yxz + 19.19);
+                    return -1.0 + 2.0 * fract(vec3(
+                        p3.x + p3.y,
+                        p3.x + p3.z,
+                        p3.y + p3.z
+                    ) * p3.zyx);
+                }
+
+                float snoise3(vec3 p) {
+                    const float K1 = 0.333333333;
+                    const float K2 = 0.166666667;
+                    vec3 i = floor(p + (p.x + p.y + p.z) * K1);
+                    vec3 d0 = p - (i - (i.x + i.y + i.z) * K2);
+                    vec3 e = step(vec3(0.0), d0 - d0.yzx);
+                    vec3 i1 = e * (1.0 - e.zxy);
+                    vec3 i2 = 1.0 - e.zxy * (1.0 - e);
+                    vec3 d1 = d0 - (i1 - K2);
+                    vec3 d2 = d0 - (i2 - K1);
+                    vec3 d3 = d0 - 0.5;
+                    vec4 h = max(0.6 - vec4(
+                        dot(d0, d0),
+                        dot(d1, d1),
+                        dot(d2, d2),
+                        dot(d3, d3)
+                    ), 0.0);
+                    vec4 n = h * h * h * h * vec4(
+                        dot(d0, hash33(i)),
+                        dot(d1, hash33(i + i1)),
+                        dot(d2, hash33(i + i2)),
+                        dot(d3, hash33(i + 1.0))
+                    );
+                    return dot(vec4(31.316), n);
+                }
+
+                vec4 extractAlpha(vec3 colorIn) {
+                    float a = max(max(colorIn.r, colorIn.g), colorIn.b);
+                    return vec4(colorIn.rgb / (a + 1e-5), a);
+                }
+
+                // Blue theme colors
+                const vec3 baseColor1 = vec3(0.145, 0.251, 0.580); // #2563EB
+                const vec3 baseColor2 = vec3(0.231, 0.510, 0.965); // #3B82F6
+                const vec3 baseColor3 = vec3(0.117, 0.157, 0.439); // #1E40AF
+                const float innerRadius = 0.6;
+                const float noiseScale = 0.65;
+
+                float light1(float intensity, float attenuation, float dist) {
+                    return intensity / (1.0 + dist * attenuation);
+                }
+
+                float light2(float intensity, float attenuation, float dist) {
+                    return intensity / (1.0 + dist * dist * attenuation);
+                }
+
+                vec4 draw(vec2 uv) {
+                    float ang = atan(uv.y, uv.x);
+                    float len = length(uv);
+                    float invLen = len > 0.0 ? 1.0 / len : 0.0;
+
+                    float n0 = snoise3(vec3(uv * noiseScale, iTime * 0.5)) * 0.5 + 0.5;
+                    float r0 = mix(mix(innerRadius, 1.0, 0.4), mix(innerRadius, 1.0, 0.6), n0);
+                    float d0 = distance(uv, (r0 * invLen) * uv);
+                    float v0 = light1(1.0, 10.0, d0);
+                    v0 *= smoothstep(r0 * 1.05, r0, len);
+                    float cl = cos(ang + iTime * 2.0) * 0.5 + 0.5;
+
+                    float a = iTime * -1.0;
+                    vec2 pos = vec2(cos(a), sin(a)) * r0;
+                    float d = distance(uv, pos);
+                    float v1 = light2(1.5, 5.0, d);
+                    v1 *= light1(1.0, 50.0, d0);
+
+                    float v2 = smoothstep(1.0, mix(innerRadius, 1.0, n0 * 0.5), len);
+                    float v3 = smoothstep(innerRadius, mix(innerRadius, 1.0, 0.5), len);
+
+                    vec3 col = mix(baseColor1, baseColor2, cl);
+                    col = mix(baseColor3, col, v0);
+                    col = (col + v1) * v2 * v3;
+                    col = clamp(col, 0.0, 1.0);
+
+                    return extractAlpha(col);
+                }
+
+                vec4 mainImage(vec2 fragCoord) {
+                    vec2 center = iResolution.xy * 0.5;
+                    float size = min(iResolution.x, iResolution.y);
+                    vec2 uv = (fragCoord - center) / size * 2.0;
+
+                    float angle = rot;
+                    float s = sin(angle);
+                    float c = cos(angle);
+                    uv = vec2(c * uv.x - s * uv.y, s * uv.x + c * uv.y);
+
+                    uv.x += hover * hoverIntensity * 0.1 * sin(uv.y * 10.0 + iTime);
+                    uv.y += hover * hoverIntensity * 0.1 * sin(uv.x * 10.0 + iTime);
+
+                    return draw(uv);
+                }
+
+                void main() {
+                    vec2 fragCoord = vUv * iResolution.xy;
+                    vec4 col = mainImage(fragCoord);
+                    gl_FragColor = vec4(col.rgb * col.a, col.a);
+                }
+            `;
+
+            try {
+                orbRenderer = new Renderer({ 
+                    canvas,
+                    alpha: true,
+                    premultipliedAlpha: false,
+                    antialias: true,
+                    dpr: window.devicePixelRatio || 1
+                });
+                
+                const gl = orbRenderer.gl;
+                gl.clearColor(0, 0, 0, 0);
+                gl.enable(gl.BLEND);
+                gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+                const geometry = new Triangle(gl);
+                orbProgram = new Program(gl, {
+                    vertex: vertexShader,
+                    fragment: fragmentShader,
+                    uniforms: {
+                        iTime: { value: 0 },
+                        iResolution: {
+                            value: new Vec3(
+                                gl.canvas.width,
+                                gl.canvas.height,
+                                gl.canvas.width / gl.canvas.height
+                            )
+                        },
+                        hover: { value: 0 },
+                        rot: { value: 0 },
+                        hoverIntensity: { value: 0 }
+                    }
+                });
+
+                const mesh = new Mesh(gl, { geometry, program: orbProgram });
+
+                const resize = () => {
+                    const container = document.getElementById('voiceOrbContainer');
+                    if (!container) return;
+                    
+                    const dpr = window.devicePixelRatio || 1;
+                    const width = container.clientWidth;
+                    const height = container.clientHeight;
+
+                    if (width === 0 || height === 0) return;
+
+                    orbRenderer.setSize(width * dpr, height * dpr);
+                    gl.canvas.style.width = width + 'px';
+                    gl.canvas.style.height = height + 'px';
+
+                    if (orbProgram) {
+                        orbProgram.uniforms.iResolution.value.set(
+                            gl.canvas.width,
+                            gl.canvas.height,
+                            gl.canvas.width / gl.canvas.height
+                        );
+                    }
+                };
+
+                window.addEventListener('resize', resize);
+                resize();
+
+                let lastTime = 0;
+                let currentRot = 0;
+                const baseRotationSpeed = 0.3;
+
+                const animate = (t) => {
+                    orbAnimationFrame = requestAnimationFrame(animate);
+                    if (!orbProgram) return;
+
+                    const dt = (t - lastTime) * 0.001;
+                    lastTime = t;
+                    orbProgram.uniforms.iTime.value = t * 0.001;
+
+                    // Apply voice-driven effects
+                    const voiceRotationSpeed = baseRotationSpeed + (voiceLevel * 1.2 * 2.0);
+                    if (voiceLevel > 0.05) {
+                        currentRot += dt * voiceRotationSpeed;
+                    }
+
+                    orbProgram.uniforms.hover.value = Math.min(voiceLevel * 2.0, 1.0);
+                    orbProgram.uniforms.hoverIntensity.value = Math.min(voiceLevel * 0.8 * 0.8, 0.8);
+                    orbProgram.uniforms.rot.value = currentRot;
+
+                    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+                    orbRenderer.render({ scene: mesh });
+                };
+
+                orbAnimationFrame = requestAnimationFrame(animate);
+
+            } catch (error) {
+                console.error('Error initializing WebGL Orb:', error);
+            }
+        }
+
+        // Initialize Web Speech API
+        function initializeVoiceRecognition() {
+            // Check for browser support
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (!SpeechRecognition) {
+                console.warn('Speech Recognition not supported in this browser');
+                document.getElementById('voiceSection').innerHTML = `
+                    <div class="error-message" style="margin: 20px 0;">
+                        <strong>Voice recognition is not supported in your browser.</strong>
+                        <p style="margin-top: 8px;">Please use Google Chrome, Microsoft Edge, or Safari for voice input.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            recognition.maxAlternatives = 1;
+            
+            // Support both Persian (Farsi) and English
+            recognition.lang = 'fa-IR'; // Default to Persian
+
+            recognition.onstart = function() {
+                console.log('Voice recognition started');
+                isRecording = true;
+                
+                if (isLandingPage) {
+                    document.getElementById('landingRecordButton').classList.add('recording');
+                    document.getElementById('landingStatus').textContent = 'Recording... (tap to stop)';
+                    document.getElementById('landingStatus').classList.add('recording');
+                } else {
+                    document.getElementById('recordButton').classList.add('recording');
+                    document.getElementById('recordingStatus').textContent = 'Recording... (tap to stop)';
+                    document.getElementById('recordingStatus').classList.add('recording');
+                }
+            };
+
+            recognition.onresult = function(event) {
+                let interimTranscript = '';
+                finalTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript + ' ';
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+
+                // Display the transcript in real-time
+                if (isLandingPage) {
+                    const preview = document.getElementById('landingTranscription');
+                    preview.textContent = finalTranscript || interimTranscript;
+                } else {
+                    const preview = document.getElementById('transcriptionPreview');
+                    preview.textContent = finalTranscript || interimTranscript;
+                }
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error:', event.error);
+                isRecording = false;
+                
+                if (isLandingPage) {
+                    document.getElementById('landingRecordButton').classList.remove('recording');
+                    document.getElementById('landingStatus').classList.remove('recording');
+                    
+                    if (event.error === 'no-speech') {
+                        document.getElementById('landingStatus').textContent = 'No speech detected. Tap to try again.';
+                    } else if (event.error === 'not-allowed') {
+                        document.getElementById('landingStatus').textContent = 'Microphone access denied. Please enable it in browser settings.';
+                    } else {
+                        document.getElementById('landingStatus').textContent = 'Error: ' + event.error;
+                    }
+                } else {
+                    document.getElementById('recordButton').classList.remove('recording');
+                    document.getElementById('recordingStatus').textContent = 'Error: ' + event.error;
+                    document.getElementById('recordingStatus').classList.remove('recording');
+                    
+                    if (event.error === 'no-speech') {
+                        document.getElementById('recordingStatus').textContent = 'No speech detected. Tap to try again.';
+                    } else if (event.error === 'not-allowed') {
+                        document.getElementById('recordingStatus').textContent = 'Microphone access denied. Please enable it in browser settings.';
+                    }
+                }
+            };
+
+            recognition.onend = function() {
+                console.log('Voice recognition ended');
+                isRecording = false;
+                
+                // Stop microphone for orb animation
+                stopMicrophone();
+                
+                if (isLandingPage) {
+                    document.getElementById('landingRecordButton').classList.remove('recording');
+                    document.getElementById('landingStatus').classList.remove('recording');
+                    
+                    if (finalTranscript.trim()) {
+                        document.getElementById('landingStatus').textContent = 'Processing...';
+                        document.getElementById('landingStatus').classList.add('analyzing');
+                        // Auto-analyze after recording on landing page
+                        setTimeout(() => analyzeLandingRecording(), 500);
+                    } else {
+                        document.getElementById('landingStatus').textContent = 'Tap to record your transaction';
+                    }
+                } else {
+                    document.getElementById('recordButton').classList.remove('recording');
+                    document.getElementById('recordingStatus').classList.remove('recording');
+                    
+                    if (finalTranscript.trim()) {
+                        document.getElementById('recordingStatus').textContent = 'Transcription complete. Tap to record again.';
+                    } else {
+                        document.getElementById('recordingStatus').textContent = 'Tap to start recording';
+                    }
+                }
+            };
+        }
+
+        // Initialize microphone for audio analysis
+        async function initMicrophone() {
+            try {
+                if (mediaStream) {
+                    stopMicrophone();
+                }
+
+                mediaStream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: false,
+                        noiseSuppression: false,
+                        autoGainControl: false,
+                        sampleRate: 44100
+                    }
+                });
+
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+                if (audioContext.state === 'suspended') {
+                    await audioContext.resume();
+                }
+
+                analyser = audioContext.createAnalyser();
+                microphone = audioContext.createMediaStreamSource(mediaStream);
+
+                analyser.fftSize = 512;
+                analyser.smoothingTimeConstant = 0.3;
+                analyser.minDecibels = -90;
+                analyser.maxDecibels = -10;
+
+                microphone.connect(analyser);
+                dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+                // Start analyzing audio
+                analyzeAudio();
+
+                console.log('Microphone initialized for orb animation');
+                return true;
+            } catch (error) {
+                console.warn('Microphone access denied:', error);
+                return false;
+            }
+        }
+
+        // Stop microphone
+        function stopMicrophone() {
+            try {
+                if (mediaStream) {
+                    mediaStream.getTracks().forEach(track => track.stop());
+                    mediaStream = null;
+                }
+
+                if (microphone) {
+                    microphone.disconnect();
+                    microphone = null;
+                }
+
+                if (analyser) {
+                    analyser.disconnect();
+                    analyser = null;
+                }
+
+                if (audioContext && audioContext.state !== 'closed') {
+                    audioContext.close();
+                    audioContext = null;
+                }
+
+                dataArray = null;
+                voiceLevel = 0;
+                console.log('Microphone stopped');
+            } catch (error) {
+                console.warn('Error stopping microphone:', error);
+            }
+        }
+
+        // Analyze audio for orb animation
+        function analyzeAudio() {
+            if (!analyser || !dataArray) return;
+
+            analyser.getByteFrequencyData(dataArray);
+
+            let sum = 0;
+            for (let i = 0; i < dataArray.length; i++) {
+                const value = dataArray[i] / 255;
+                sum += value * value;
+            }
+            const rms = Math.sqrt(sum / dataArray.length);
+
+            // Apply sensitivity and boost for visual effect
+            voiceLevel = Math.min(rms * 1.5 * 3.0, 1);
+
+            // Continue analyzing
+            if (isRecording) {
+                requestAnimationFrame(analyzeAudio);
+            }
+        }
+
+        // Toggle recording on landing page
+        async function toggleLandingRecording() {
+            if (!recognition) {
+                alert('Voice recognition is not available in your browser.');
+                return;
+            }
+
+            if (isRecording) {
+                recognition.stop();
+                stopMicrophone();
+                voiceLevel = 0;
+                document.getElementById('landingRecordButton').classList.remove('recording');
+            } else {
+                finalTranscript = '';
+                document.getElementById('landingTranscription').textContent = '';
+                document.getElementById('landingStatus').classList.remove('analyzing');
+                
+                // Initialize microphone for orb animation
+                await initMicrophone();
+                
+                document.getElementById('landingRecordButton').classList.add('recording');
+                recognition.start();
+            }
+        }
+
+        // Analyze recording from landing page
+        async function analyzeLandingRecording() {
+            const text = finalTranscript.trim();
+            
+            if (!text) {
+                document.getElementById('landingStatus').textContent = 'No transcription available';
+                document.getElementById('landingStatus').classList.remove('analyzing');
+                return;
+            }
+
+            try {
+                // Step 1: Clarify
+                const response = await fetch('/clarify-event', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Switch to dashboard and show clarification
+                    showDashboard();
+                    showEventForm();
+                    displayClarificationOptions(data.interpretations);
+                } else {
+                    document.getElementById('landingStatus').textContent = 'Error processing transaction';
+                    document.getElementById('landingStatus').classList.remove('analyzing');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('landingStatus').textContent = 'Network error occurred';
+                document.getElementById('landingStatus').classList.remove('analyzing');
+            }
+        }
+
+        // Switch to dashboard view
+        function showDashboard() {
+            isLandingPage = false;
+            document.getElementById('voiceLandingView').style.display = 'none';
+            document.getElementById('dashboardView').style.display = 'block';
+        }
+
+        // Switch back to landing view
+        function showLandingView() {
+            isLandingPage = true;
+            document.getElementById('dashboardView').style.display = 'none';
+            document.getElementById('voiceLandingView').style.display = 'flex';
+            
+            // Reset landing page state
+            finalTranscript = '';
+            document.getElementById('landingTranscription').textContent = '';
+            document.getElementById('landingStatus').textContent = 'Tap to record your transaction';
+            document.getElementById('landingStatus').classList.remove('analyzing', 'recording');
+            document.getElementById('landingRecordButton').classList.remove('recording');
+            
+            // Hide all cards
+            hideAllCards();
+        }
+
+        // Toggle recording on/off
+        function toggleRecording() {
+            if (!recognition) {
+                alert('Voice recognition is not available in your browser.');
+                return;
+            }
+
+            if (isRecording) {
+                recognition.stop();
+            } else {
+                finalTranscript = '';
+                document.getElementById('transcriptionPreview').textContent = '';
+                recognition.start();
+            }
+        }
+
+        // Switch between text and voice tabs
+        function switchTab(tabName) {
+            // Update tab buttons
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            tabBtns.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update tab content
+            const textSection = document.getElementById('textSection');
+            const voiceSection = document.getElementById('voiceSection');
+
+            if (tabName === 'text') {
+                textSection.classList.add('active');
+                voiceSection.classList.remove('active');
+                
+                // Stop recording if switching away from voice tab
+                if (isRecording && recognition) {
+                    recognition.stop();
+                }
+            } else if (tabName === 'voice') {
+                textSection.classList.remove('active');
+                voiceSection.classList.add('active');
+            }
+        }
 
         async function loadGoldPrice() {
             try {
@@ -996,6 +1978,43 @@
                 document.getElementById('eventText').value = "Customer Rezaei bought 4g melted gold for 45 million. Pay this to collaborator Akbari to settle 4.5g gold debt.";
             } else if (type === 'suggestion') {
                 document.getElementById('scenarioText').value = "A customer wants to buy gold worth 45 million";
+            }
+        }
+
+        async function analyzeEventFromVoice() {
+            const text = finalTranscript.trim();
+            
+            if (!text) {
+                alert('Please record your transaction description first.');
+                return;
+            }
+
+            const spinner = document.getElementById('voiceAnalyzeSpinner');
+            spinner.innerHTML = '<span class="loading"></span>';
+            
+            // Hide previous results
+            document.getElementById('eventResults').classList.remove('active');
+            document.getElementById('clarificationSection').classList.remove('active');
+            
+            try {
+                // Step 1: Clarify
+                const response = await fetch('/clarify-event', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayClarificationOptions(data.interpretations);
+                } else {
+                    displayError('eventResults', data.detail || 'Transaction clarification failed.');
+                }
+            } catch (error) {
+                displayError('eventResults', 'Network error: ' + error.message);
+            } finally {
+                spinner.innerHTML = '';
             }
         }
 
@@ -1347,6 +2366,21 @@
             `;
             resultsDiv.classList.add('active');
         }
+
+        // Make initializeWebGLOrb accessible globally for module script
+        window.initializeWebGLOrb = initializeWebGLOrb;
+
+        // Load initial data
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show voice landing by default
+            document.getElementById('voiceLandingView').style.display = 'flex';
+            document.getElementById('dashboardView').style.display = 'none';
+            
+            // initializeWebGLOrb will be called after OGL loads (see module script in head)
+            loadGoldPrice();
+            loadAccountCounts();
+            initializeVoiceRecognition();
+        });
     </script>
 </body>
 </html>
