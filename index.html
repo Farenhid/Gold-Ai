@@ -1000,6 +1000,10 @@
             pointer-events: none;
         }
 
+        /* Spline robot canvas positioning (so far):
+         * - Robot is shifted right and down so the orbit (Push to Talk) button does not overlap the body.
+         * - Only the canvas is transformed; head and body stay together (no detached head).
+         * - translateX(45%) = robot further right; translateY(25%) = robot lower. */
         #splineCanvas {
             position: absolute;
             top: 0;
@@ -1007,6 +1011,7 @@
             width: 100%;
             height: 100%;
             background: transparent !important;
+            transform: translateX(45%) translateY(25%);
         }
 
         .spline-loader {
@@ -1810,6 +1815,26 @@
                         
                         if (!splineRobotHead) {
                             console.log('Robot head not found, mouse follow disabled');
+                        }
+                        
+                        /* Camera / orbit framing (so far):
+                         * - Camera moved up and left so orbit view is above and to the left of robot's face.
+                         * - No per-object position changes (only camera); keeps head and body aligned. */
+                        try {
+                            const camera = splineApp._camera || splineApp.camera;
+                            if (camera && camera.position) {
+                                // Move camera up and to the left, looking down at robot's face
+                                camera.position.x -= 120; // Move camera to the left
+                                camera.position.y += 60; // Move camera up
+                                camera.position.z += 30; // Pull camera back slightly for better framing
+                            }
+                            
+                            // If there's an OrbitControls target, adjust it to look at face level
+                            if (splineApp._orbitControls && splineApp._orbitControls.target) {
+                                splineApp._orbitControls.target.y += 15; // Look at face level (higher)
+                            }
+                        } catch (e) {
+                            console.warn('Could not adjust camera position:', e);
                         }
                         
                         // Setup mouse tracking
