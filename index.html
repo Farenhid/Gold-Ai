@@ -354,6 +354,30 @@
             letter-spacing: -0.5px;
         }
 
+        .gold-price-row {
+            display: flex;
+            justify-content: center;
+            align-items: baseline;
+            flex-wrap: wrap;
+        }
+
+        .gold-price-unit {
+            font-size: 0.5em;
+            font-weight: 500;
+            letter-spacing: 0.06em;
+            opacity: 0.88;
+            margin-left: 6px;
+            vertical-align: baseline;
+            -webkit-text-fill-color: initial;
+            color: var(--text-secondary);
+        }
+
+        .gold-price-unit--spacer {
+            visibility: hidden;
+            margin-left: 0;
+            margin-right: 6px;
+        }
+
         /* Main Buttons */
         .main-buttons {
             display: grid;
@@ -1302,7 +1326,7 @@
             <div class="info-grid">
                 <div class="info-item">
                     <h3>Gold Price</h3>
-                    <p id="goldPrice">—</p>
+                    <p class="gold-price-row"><span class="gold-price-unit gold-price-unit--spacer" aria-hidden="true">$/Gr</span><span id="goldPrice">—</span><span class="gold-price-unit">$/Gr</span></p>
                 </div>
                 <div class="info-item">
                     <h3>Collaborators</h3>

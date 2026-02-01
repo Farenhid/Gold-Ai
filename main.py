@@ -753,7 +753,7 @@ async def get_gold_price():
         return {
             "status": "success",
             "price_per_gram_rial": price,
-            "formatted": f"{price:,.0f} Dollar/Gram"
+            "formatted": f"{price:,.0f}"
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -38,7 +38,7 @@ Before testing, ensure:
 2. It should display a formatted price
 
 **Expected Result**: 
-- Shows "10,000,000 Rial/gram" (mock data)
+- Shows the price number with "$/Gr" unit (e.g. "10,000,000 $/Gr" with mock data); number is centered under "Gold Price"
 
 **API Test**:
 ```bash
@@ -50,9 +50,10 @@ curl http://localhost:8000/gold-price
 {
   "status": "success",
   "price_per_gram_rial": 10000000.0,
-  "formatted": "10,000,000 Rial/gram"
+  "formatted": "10,000,000"
 }
 ```
+(The UI displays the number plus "$/Gr" as the unit.)
 
 ## Test 3: View Accounts
 
