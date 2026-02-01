@@ -1036,6 +1036,18 @@
             border-top-color: #2563eb;
         }
 
+        /* Hide Spline "Built with Spline" attribution button */
+        #splineRobotContainer a,
+        #splineRobotContainer iframe {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        a[href*="spline.design"] {
+            display: none !important;
+        }
+
         .orbit-btn-overlay {
             position: relative;
             z-index: 10;

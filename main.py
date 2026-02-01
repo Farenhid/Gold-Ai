@@ -5,6 +5,8 @@ This middleware translates conversational transaction descriptions
 into structured API calls using OpenAI's language models.
 """
 
+import asyncio
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, File, UploadFile
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -14,22 +16,23 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 from openai import OpenAI
+import httpx
 
 from adapters.sqlalchemy_adapter import SqlAlchemyAdapter
+
+# Live gold price API (RapidAPI - gold-price-live)
+GOLD_PRICE_API_URL = "https://gold-price-live.p.rapidapi.com/get_metal_prices"
+RAPIDAPI_HOST = "gold-price-live.p.rapidapi.com"
+GRAMS_PER_OZ = 31.1035  # troy ounce to grams
+DEFAULT_GOLD_USD_PER_GRAM = 65.0  # fallback if API unavailable
 
 # Load .env from project root (same folder as this file) so the key is found
 _env_path = Path(__file__).resolve().parent / ".env"
 load_dotenv(dotenv_path=_env_path)
 
-# Initialize FastAPI app
-app = FastAPI(
-    title="Gold Accounting Middleware",
-    description="Smart middleware for translating conversational transactions into accounting API calls",
-    version="1.0.0"
-)
-
-# Initialize the accounting adapter (using domain expert's logic)
-adapter = SqlAlchemyAdapter()
+# Initialize the accounting adapter first (used by lifespan background task)
+# Default price in USD/gram until live API updates it
+adapter = SqlAlchemyAdapter(gold_price_per_gram=DEFAULT_GOLD_USD_PER_GRAM)
 
 # Initialize OpenAI client
 openai_api_key = os.getenv("OPENAI_API_KEY")
@@ -43,6 +46,91 @@ else:
     print("WARNING: OPENAI_API_KEY not found in environment. NLP features will not work.")
 
 openai_model = os.getenv("OPENAI_MODEL", "gpt-5.2")  # Using most powerful model for best reasoning
+
+
+def _parse_gold_price_usd_per_gram(data: dict) -> Optional[float]:
+    """
+    Parse gold-price-live get_metal_prices response: gold price in USD per gram.
+    API typically returns USD per troy ounce; we convert to per gram.
+    """
+    try:
+        # get_metal_prices often returns { "gold": price_usd_oz } or { "prices": { "gold": ... } }
+        gold_val = None
+        for key in ("gold", "Gold", "GOLD", "xau", "XAU"):
+            val = data.get(key)
+            if isinstance(val, (int, float)):
+                gold_val = float(val)
+                break
+        if gold_val is None:
+            prices = data.get("prices") or data.get("data") or data.get("rates") or {}
+            if isinstance(prices, dict):
+                for k in ("gold", "Gold", "GOLD", "xau", "XAU"):
+                    if isinstance(prices.get(k), (int, float)):
+                        gold_val = float(prices[k])
+                        break
+        if gold_val is None:
+            return None
+        # Metal APIs usually return USD per troy ounce (e.g. 2000–2700)
+        if 500 < gold_val < 50000:
+            return gold_val / GRAMS_PER_OZ
+        if gold_val > 0 and gold_val < 0.01:
+            return (1.0 / gold_val) / GRAMS_PER_OZ
+        return None
+    except (TypeError, ZeroDivisionError, KeyError):
+        return None
+
+
+async def fetch_live_gold_price_from_api() -> Optional[float]:
+    """Fetch current gold price (USD per gram) from RapidAPI. Returns None on failure."""
+    api_key = os.getenv("RAPIDAPI_KEY") or os.getenv("RAPIDAPI_API_KEY") or "f57d9efabfmsh1ce5f873529eacap1380c1jsn4c8a2e45e2a6"
+    host = os.getenv("RAPIDAPI_HOST", RAPIDAPI_HOST)
+    if not api_key:
+        return None
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            r = await client.get(
+                GOLD_PRICE_API_URL,
+                headers={
+                    "x-rapidapi-key": api_key,
+                    "x-rapidapi-host": host,
+                },
+            )
+            r.raise_for_status()
+            data = r.json()
+            return _parse_gold_price_usd_per_gram(data)
+    except Exception as e:
+        print(f"Gold price API error: {e}")
+        return None
+
+
+async def gold_price_updater_task():
+    """Background task: fetch gold price on start and every 30 minutes."""
+    while True:
+        price = await fetch_live_gold_price_from_api()
+        if price is not None:
+            adapter.update_gold_price(price)
+            print(f"Gold price updated: {price:.2f} USD/gram")
+        else:
+            try:
+                adapter.get_live_gold_price()
+            except Exception:
+                adapter.update_gold_price(DEFAULT_GOLD_USD_PER_GRAM)
+        await asyncio.sleep(30 * 60)  # 30 minutes
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    asyncio.create_task(gold_price_updater_task())
+    yield
+
+
+# Initialize FastAPI app (after adapter and lifespan are defined)
+app = FastAPI(
+    title="Gold Accounting Middleware",
+    description="Smart middleware for translating conversational transactions into accounting API calls",
+    version="1.0.0",
+    lifespan=lifespan,
+)
 
 
 # Pydantic models for request/response
@@ -665,7 +753,7 @@ async def get_gold_price():
         return {
             "status": "success",
             "price_per_gram_rial": price,
-            "formatted": f"{price:,.0f} Rial/gram"
+            "formatted": f"{price:,.0f} Dollar/Gram"
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
