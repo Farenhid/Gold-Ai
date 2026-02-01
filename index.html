@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>حسابداری هوشمند طلا</title>
+    <title>Smart Gold Accounting</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -163,7 +163,7 @@
             min-height: 100vh;
             position: relative;
             color: var(--text-primary);
-            text-align: right;
+            text-align: left;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             background: var(--bg-light);
@@ -815,24 +815,24 @@
 
     <div class="container">
         <header>
-            <h1>حسابداری هوشمند طلا</h1>
-            <p>مدیریت تراکنش با هوش مصنوعی</p>
+            <h1>Smart Gold Accounting</h1>
+            <p>Transaction management with AI</p>
         </header>
 
         <!-- Info Section -->
         <div class="info-section">
-            <h3>وضعیت سیستم</h3>
+            <h3>System Status</h3>
             <div class="info-grid">
                 <div class="info-item">
-                    <h3>قیمت طلا</h3>
+                    <h3>Gold Price</h3>
                     <p id="goldPrice">—</p>
                 </div>
                 <div class="info-item">
-                    <h3>همکاران</h3>
+                    <h3>Collaborators</h3>
                     <p id="collaboratorCount">—</p>
                 </div>
                 <div class="info-item">
-                    <h3>مشتریان</h3>
+                    <h3>Customers</h3>
                     <p id="customerCount">—</p>
                 </div>
             </div>
@@ -841,57 +841,57 @@
         <!-- Main Action Buttons -->
         <div class="main-buttons">
             <button class="gradient-button" onclick="showEventForm()">
-                ثبت رویداد
+                Record Event
             </button>
             <button class="gradient-button gradient-button-variant" onclick="showSuggestionForm()">
-                دریافت پیشنهاد
+                Get Suggestion
             </button>
             <button class="btn btn-secondary" onclick="showAccounts()">
-                مشاهده حساب‌ها
+                View Accounts
             </button>
         </div>
 
         <!-- Event Form Card -->
         <div id="eventCard" class="card">
-            <h2>ثبت رویداد تراکنش</h2>
+            <h2>Record Transaction Event</h2>
             <div class="form-group">
-                <label for="eventText">تراکنش را شرح دهید</label>
-                <textarea id="eventText" placeholder="مثال: مشتری رضایی ۴ گرم طلای آب‌شده به مبلغ ۴۵ میلیون تومان خرید. این پول را به همکار اکبری بپرداز تا ۴/۵ گرم بدهی طلا تسویه شود."></textarea>
+                <label for="eventText">Describe the transaction</label>
+                <textarea id="eventText" placeholder="Example: Customer Rezaei bought 4g melted gold for 45 million. Pay this to collaborator Akbari to settle 4.5g gold debt."></textarea>
                 
                 <div class="example-text" onclick="fillExample('event')">
-                    استفاده از مثال: «مشتری رضایی ۴ گرم طلای آب‌شده به مبلغ ۴۵ میلیون تومان خرید...»
+                    Use example: "Customer Rezaei bought 4g melted gold for 45 million..."
                 </div>
             </div>
             <div class="button-group">
                 <button class="gradient-button gradient-button-small" onclick="analyzeEvent()">
                     <span id="analyzeSpinner"></span>
-                    تحلیل تراکنش
+                    Analyze Transaction
                 </button>
-                <button class="btn btn-tertiary btn-small" onclick="hideAllCards()">انصراف</button>
+                <button class="btn btn-tertiary btn-small" onclick="hideAllCards()">Cancel</button>
             </div>
 
             <!-- Clarification Section -->
             <div id="clarificationSection" class="result-box clarification-box">
-                <h3>شفاف‌سازی تراکنش</h3>
+                <h3>Clarify Transaction</h3>
                 <p style="margin-bottom: 16px; color: var(--text-secondary); font-size: 0.9rem;">
-                    لطفاً تفسیری را که با منظور شما یکی است انتخاب کنید:
+                    Please select the interpretation that matches your intent:
                 </p>
                 <div id="interpretationOptions" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;"></div>
                 
                 <div class="interpretation-item" style="margin-top: 16px;">
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-direction: row-reverse;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                         <input type="radio" name="interpretation" value="other" id="optOther" onchange="toggleOtherText(true)">
-                        <label for="optOther" style="margin: 0; cursor: pointer;">سایر (خودم می‌نویسم)</label>
+                        <label for="optOther" style="margin: 0; cursor: pointer;">Other (I'll write it myself)</label>
                     </div>
-                    <textarea id="otherText" placeholder="دقیقاً بنویسید چه اتفاقی افتاده..." style="display: none; min-height: 80px; margin-top: 8px;"></textarea>
+                    <textarea id="otherText" placeholder="Describe exactly what happened..." style="display: none; min-height: 80px; margin-top: 8px;"></textarea>
                 </div>
 
                 <div class="button-group" style="margin-top: 24px;">
                     <button class="gradient-button gradient-button-small" onclick="confirmClarification()">
                         <span id="clarifySpinner"></span>
-                        ادامه
+                        Continue
                     </button>
-                    <button class="btn btn-tertiary btn-small" onclick="resetClarification()">بازگشت</button>
+                    <button class="btn btn-tertiary btn-small" onclick="resetClarification()">Back</button>
                 </div>
             </div>
 
@@ -901,21 +901,21 @@
 
         <!-- Suggestion Form Card -->
         <div id="suggestionCard" class="card">
-            <h2>دریافت پیشنهاد هوشمند</h2>
+            <h2>Get Smart Suggestion</h2>
             <div class="form-group">
-                <label for="scenarioText">سناریو را شرح دهید</label>
-                <textarea id="scenarioText" placeholder="مثال: یک مشتری می‌خواهد به ارزش ۴۵ میلیون تومان طلا بخرد"></textarea>
+                <label for="scenarioText">Describe the scenario</label>
+                <textarea id="scenarioText" placeholder="Example: A customer wants to buy gold worth 45 million"></textarea>
                 
                 <div class="example-text" onclick="fillExample('suggestion')">
-                    استفاده از مثال: «یک مشتری می‌خواهد به ارزش ۴۵ میلیون تومان طلا بخرد»
+                    Use example: "A customer wants to buy gold worth 45 million"
                 </div>
             </div>
             <div class="button-group">
                 <button class="gradient-button gradient-button-small gradient-button-variant" onclick="getSuggestion()">
                     <span id="suggestionSpinner"></span>
-                    دریافت پیشنهاد
+                    Get Suggestion
                 </button>
-                <button class="btn btn-tertiary btn-small" onclick="hideAllCards()">انصراف</button>
+                <button class="btn btn-tertiary btn-small" onclick="hideAllCards()">Cancel</button>
             </div>
 
             <!-- Results -->
@@ -924,9 +924,9 @@
 
         <!-- Accounts View Card -->
         <div id="accountsCard" class="card">
-            <h2>خلاصه حساب‌ها</h2>
+            <h2>Account Summary</h2>
             <div id="accountsResults"></div>
-            <button class="btn btn-tertiary btn-small" onclick="hideAllCards()" style="margin-top: 24px;">بستن</button>
+            <button class="btn btn-tertiary btn-small" onclick="hideAllCards()" style="margin-top: 24px;">Close</button>
         </div>
     </div>
 
@@ -993,9 +993,9 @@
 
         function fillExample(type) {
             if (type === 'event') {
-                document.getElementById('eventText').value = "مشتری رضایی ۴ گرم طلای آب‌شده به مبلغ ۴۵ میلیون تومان خرید. این پول را به همکار اکبری بپرداز تا ۴/۵ گرم بدهی طلا تسویه شود.";
+                document.getElementById('eventText').value = "Customer Rezaei bought 4g melted gold for 45 million. Pay this to collaborator Akbari to settle 4.5g gold debt.";
             } else if (type === 'suggestion') {
-                document.getElementById('scenarioText').value = "یک مشتری می‌خواهد به ارزش ۴۵ میلیون تومان طلا بخرد";
+                document.getElementById('scenarioText').value = "A customer wants to buy gold worth 45 million";
             }
         }
 
@@ -1003,7 +1003,7 @@
             const text = document.getElementById('eventText').value.trim();
             
             if (!text) {
-                alert('لطفاً توضیح تراکنش را وارد کنید.');
+                alert('Please enter a transaction description.');
                 return;
             }
 
@@ -1027,10 +1027,10 @@
                 if (response.ok) {
                     displayClarificationOptions(data.interpretations);
                 } else {
-                    displayError('eventResults', data.detail || 'شفاف‌سازی تراکنش ناموفق بود.');
+                    displayError('eventResults', data.detail || 'Transaction clarification failed.');
                 }
             } catch (error) {
-                displayError('eventResults', 'خطای شبکه: ' + error.message);
+                displayError('eventResults', 'Network error: ' + error.message);
             } finally {
                 spinner.innerHTML = '';
             }
@@ -1052,10 +1052,10 @@
                 };
                 
                 div.innerHTML = `
-                    <div style="display: flex; gap: 12px; align-items: flex-start; flex-direction: row-reverse;">
+                    <div style="display: flex; gap: 12px; align-items: flex-start;">
                         <input type="radio" name="interpretation" value="${index}" id="${id}" ${index === 0 ? 'checked' : ''} onchange="toggleOtherText(false)" style="margin-top: 4px; width: auto;">
-                        <div style="text-align: right;">
-                            <label for="${id}" style="font-weight: 600; cursor: pointer; color: var(--text-primary); margin-bottom: 4px; display: block;">گزینه ${index + 1}</label>
+                        <div style="text-align: left;">
+                            <label for="${id}" style="font-weight: 600; cursor: pointer; color: var(--text-primary); margin-bottom: 4px; display: block;">Option ${index + 1}</label>
                             <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">${opt.text}</p>
                         </div>
                     </div>
@@ -1083,7 +1083,7 @@
         async function confirmClarification() {
             const selected = document.querySelector('input[name="interpretation"]:checked');
             if (!selected) {
-                alert('لطفاً یک گزینه انتخاب کنید.');
+                alert('Please select an option.');
                 return;
             }
 
@@ -1091,7 +1091,7 @@
             if (selected.value === 'other') {
                 finalText = document.getElementById('otherText').value.trim();
                 if (!finalText) {
-                    alert('لطفاً توضیح خود را بنویسید.');
+                    alert('Please enter your description.');
                     return;
                 }
             } else {
@@ -1120,10 +1120,10 @@
                     document.getElementById('clarificationSection').classList.remove('active');
                     displayEventResults(data);
                 } else {
-                    displayError('eventResults', data.detail || 'پردازش تراکنش ناموفق بود.');
+                    displayError('eventResults', data.detail || 'Transaction processing failed.');
                 }
             } catch (error) {
-                displayError('eventResults', 'خطای شبکه: ' + error.message);
+                displayError('eventResults', 'Network error: ' + error.message);
             } finally {
                 spinner.innerHTML = '';
             }
@@ -1134,7 +1134,7 @@
             const text = document.getElementById('eventText').value.trim();
             
             if (!text) {
-                alert('لطفاً توضیح تراکنش را وارد کنید.');
+                alert('Please enter a transaction description.');
                 return;
             }
 
@@ -1156,10 +1156,10 @@
                     currentPlan = data.plan;
                     displayEventResults(data);
                 } else {
-                    displayError('eventResults', data.detail || 'تحلیل تراکنش ناموفق بود.');
+                    displayError('eventResults', data.detail || 'Transaction analysis failed.');
                 }
             } catch (error) {
-                displayError('eventResults', 'خطای شبکه: ' + error.message);
+                displayError('eventResults', 'Network error: ' + error.message);
             } finally {
                 spinner.innerHTML = '';
             }
@@ -1168,14 +1168,14 @@
         function displayEventResults(data) {
             const resultsDiv = document.getElementById('eventResults');
             
-            let html = '<h3>طرح تراکنش</h3>';
+            let html = '<h3>Transaction Plan</h3>';
             html += `<p style="margin-bottom: 16px; color: var(--text-secondary); font-size: 0.875rem;">${data.message}</p>`;
             
             data.plan.forEach(item => {
                 html += `
                     <div class="transaction-item">
-                        <h4>مرحله ${item.step}: ${item.action}</h4>
-                        <p>${item.description || 'بدون توضیح اضافه'}</p>
+                        <h4>Step ${item.step}: ${item.action}</h4>
+                        <p>${item.description || 'No additional description'}</p>
                     </div>
                 `;
             });
@@ -1183,10 +1183,10 @@
             html += `
                 <div class="button-group" style="margin-top: 20px;">
                     <button class="gradient-button gradient-button-small" onclick="executePlan()">
-                        تأیید و اجرا
+                        Confirm & Execute
                     </button>
                     <button class="btn btn-tertiary btn-small" onclick="document.getElementById('eventResults').classList.remove('active'); currentPlan = null;">
-                        انصراف
+                        Cancel
                     </button>
                 </div>
             `;
@@ -1197,7 +1197,7 @@
 
         async function executePlan() {
             if (!currentPlan) {
-                alert('طرحی برای اجرا وجود ندارد.');
+                alert('No plan to execute.');
                 return;
             }
 
@@ -1216,21 +1216,21 @@
                     const resultsDiv = document.getElementById('eventResults');
                     resultsDiv.innerHTML = `
                         <div class="success-message">
-                            <h3>موفق</h3>
+                            <h3>Success</h3>
                             <p>${data.message}</p>
                             <p style="margin-top: 8px; font-size: 0.875rem; color: var(--text-secondary);">
-                                ${data.results.length} تراکنش با موفقیت اجرا شد.
+                                ${data.results.length} transaction(s) executed successfully.
                             </p>
                         </div>
                         <button class="gradient-button gradient-button-small" onclick="hideAllCards(); document.getElementById('eventText').value = ''; currentPlan = null;" style="margin-top: 16px;">
-                            انجام شد
+                            Done
                         </button>
                     `;
                 } else {
-                    displayError('eventResults', data.detail || 'اجرای طرح ناموفق بود.');
+                    displayError('eventResults', data.detail || 'Plan execution failed.');
                 }
             } catch (error) {
-                displayError('eventResults', 'خطای شبکه: ' + error.message);
+                displayError('eventResults', 'Network error: ' + error.message);
             }
         }
 
@@ -1238,7 +1238,7 @@
             const scenario = document.getElementById('scenarioText').value.trim();
             
             if (!scenario) {
-                alert('لطفاً سناریو را شرح دهید.');
+                alert('Please describe the scenario.');
                 return;
             }
 
@@ -1259,10 +1259,10 @@
                 if (response.ok) {
                     displaySuggestionResults(data);
                 } else {
-                    displayError('suggestionResults', data.detail || 'دریافت پیشنهاد ناموفق بود.');
+                    displayError('suggestionResults', data.detail || 'Failed to get suggestion.');
                 }
             } catch (error) {
-                displayError('suggestionResults', 'خطای شبکه: ' + error.message);
+                displayError('suggestionResults', 'Network error: ' + error.message);
             } finally {
                 spinner.innerHTML = '';
             }
@@ -1271,7 +1271,7 @@
         function displaySuggestionResults(data) {
             const resultsDiv = document.getElementById('suggestionResults');
             
-            let html = '<h3>پیشنهاد هوشمند</h3>';
+            let html = '<h3>Smart Suggestion</h3>';
             html += `<div style="background: var(--bg-white); padding: 18px 20px; border-radius: 12px; border: 1px solid var(--border);">`;
             html += `<p style="font-size: 0.9375rem; line-height: 1.6; color: var(--text-primary);">${data.suggestion}</p>`;
             html += `</div>`;
@@ -1280,11 +1280,11 @@
                 const acc = data.recommended_account;
                 html += `
                     <div style="margin-top: 20px;">
-                        <h4 style="color: var(--text-primary); font-weight: 600; margin-bottom: 12px; font-size: 0.875rem;">حساب پیشنهادی</h4>
+                        <h4 style="color: var(--text-primary); font-weight: 600; margin-bottom: 12px; font-size: 0.875rem;">Recommended Account</h4>
                         <div class="transaction-item">
                             <h4>${acc.name}</h4>
-                            <p>طلا: ${acc.balance.gold_gr} گرم</p>
-                            <p>ریال: ${acc.balance.rial.toLocaleString('fa-IR')} ریال</p>
+                            <p>Gold: ${acc.balance.gold_gr} g</p>
+                            <p>Rial: ${acc.balance.rial.toLocaleString('en-US')} Rial</p>
                         </div>
                     </div>
                 `;
@@ -1301,30 +1301,30 @@
                 
                 const resultsDiv = document.getElementById('accountsResults');
                 
-                let html = '<h3 style="color: var(--text-primary); margin-bottom: 20px; font-weight: 700; font-size: 1rem;">همکاران</h3>';
+                let html = '<h3 style="color: var(--text-primary); margin-bottom: 20px; font-weight: 700; font-size: 1rem;">Collaborators</h3>';
                 
                 const collaborators = data.accounts.filter(acc => acc.type === 'collaborator');
                 collaborators.forEach(acc => {
                     html += `
                         <div class="transaction-item">
                             <h4>${acc.name}</h4>
-                            <p><strong>طلا:</strong> ${acc.balance.gold_gr} گرم</p>
-                            <p><strong>ریال:</strong> ${acc.balance.rial.toLocaleString('fa-IR')} ریال</p>
-                            <p><strong>دلار:</strong> $${acc.balance.usd.toLocaleString('fa-IR')}</p>
+                            <p><strong>Gold:</strong> ${acc.balance.gold_gr} g</p>
+                            <p><strong>Rial:</strong> ${acc.balance.rial.toLocaleString('en-US')} Rial</p>
+                            <p><strong>USD:</strong> $${acc.balance.usd.toLocaleString('en-US')}</p>
                         </div>
                     `;
                 });
                 
-                html += '<h3 style="color: var(--text-primary); margin: 32px 0 20px 0; font-weight: 700; font-size: 1rem;">مشتریان</h3>';
+                html += '<h3 style="color: var(--text-primary); margin: 32px 0 20px 0; font-weight: 700; font-size: 1rem;">Customers</h3>';
                 
                 const customers = data.accounts.filter(acc => acc.type === 'customer');
                 customers.forEach(acc => {
                     html += `
                         <div class="transaction-item">
                             <h4>${acc.name}</h4>
-                            <p><strong>طلا:</strong> ${acc.balance.gold_gr} گرم</p>
-                            <p><strong>ریال:</strong> ${acc.balance.rial.toLocaleString('fa-IR')} ریال</p>
-                            <p><strong>دلار:</strong> $${acc.balance.usd.toLocaleString('fa-IR')}</p>
+                            <p><strong>Gold:</strong> ${acc.balance.gold_gr} g</p>
+                            <p><strong>Rial:</strong> ${acc.balance.rial.toLocaleString('en-US')} Rial</p>
+                            <p><strong>USD:</strong> $${acc.balance.usd.toLocaleString('en-US')}</p>
                         </div>
                     `;
                 });
@@ -1333,7 +1333,7 @@
             } catch (error) {
                 console.error('Error loading accounts:', error);
                 document.getElementById('accountsResults').innerHTML = `
-                    <div class="error-message">بارگذاری حساب‌ها ناموفق بود.</div>
+                    <div class="error-message">Failed to load accounts.</div>
                 `;
             }
         }
@@ -1342,7 +1342,7 @@
             const resultsDiv = document.getElementById(elementId);
             resultsDiv.innerHTML = `
                 <div class="error-message">
-                    <strong>خطا:</strong> ${message}
+                    <strong>Error:</strong> ${message}
                 </div>
             `;
             resultsDiv.classList.add('active');

@@ -110,27 +110,27 @@ def clarify_transaction_with_llm(text: str) -> Dict:
         "gold_price": gold_price
     }
     
-    system_prompt = """تو دستیار حسابداری طلای متخصصی هستی. کاربر یک توضیح تراکنش داده که ممکن است مبهم باشد. 
-بر اساس context داده‌شده (مشتریان، همکاران، حساب‌های بانکی، قیمت طلا)، حداکثر ۳ تفسیر محتمل از منظور کاربر تولید کن. 
-هر تفسیر باید یک جملهٔ واضح و دقیق به فارسی باشد که دقیقاً چه اتفاقی افتاده (مثلاً «مشتری الف ۱۰ گرم طلا به مغازه فروخت به مبلغ X»). 
-آن‌ها را به ترتیب احتمال (از بیشتر به کمتر) مرتب کن.
+    system_prompt = """You are an expert gold accounting assistant. The user has given a transaction description that may be ambiguous.
+Based on the provided context (customers, collaborators, bank accounts, gold price), produce up to 3 likely interpretations of what the user meant.
+Each interpretation must be one clear, precise sentence in English describing exactly what happened (e.g. "Customer A sold 10g gold to the shop for amount X").
+Order them by probability (highest to lowest).
 
 Context:
-- مشتریان/همکاران: {customers}
-- حساب‌های بانکی: {bank_accounts}
-- قیمت طلا: {gold_price} ریال/گرم
+- Customers/collaborators: {customers}
+- Bank accounts: {bank_accounts}
+- Gold price: {gold_price} Rial/gram
 
-خروجی را فقط به صورت JSON در این قالب دقیق برگردان: 
+Return output only as valid JSON in this exact format:
 {{
   "interpretations": [
-    {{"text": "توضیح دقیق ۱ به فارسی", "probability": 0.9}},
-    {{"text": "توضیح دقیق ۲ به فارسی", "probability": 0.7}}
+    {{"text": "Precise description 1 in English", "probability": 0.9}},
+    {{"text": "Precise description 2 in English", "probability": 0.7}}
   ]
 }}"""
 
-    user_prompt = f"""توضیح تراکنش کاربر: {text}
+    user_prompt = f"""User transaction description: {text}
 
-گزینه‌های شفاف‌سازی را تولید کن."""
+Generate clarification options."""
 
     try:
         response = openai_client.chat.completions.create(
@@ -158,7 +158,7 @@ Context:
         print(f"Error clarifying transaction with LLM: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"شفاف‌سازی تراکنش ناموفق بود: {str(e)}"
+            detail=f"Transaction clarification failed: {str(e)}"
         )
 
 
@@ -175,7 +175,7 @@ def load_scenarios_context() -> str:
         with open(scenarios_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
             
-        formatted_output = "**الگوهای سناریو و مثال‌ها (برگرفته از پایگاه دانش):**\n\n"
+        formatted_output = "**Scenario patterns and examples (from knowledge base):**\n\n"
         
         for i, scenario in enumerate(data.get("scenarios", []), 1):
             title = scenario.get("title", f"Scenario {i}")
@@ -185,11 +185,11 @@ def load_scenarios_context() -> str:
             output = scenario.get("expected_output", [])
             
             formatted_output += f"{i}) {title}\n"
-            formatted_output += f"- ورودی کاربر: \"{user_input}\"\n"
-            formatted_output += f"- تحلیل: {reasoning}\n"
+            formatted_output += f"- User input: \"{user_input}\"\n"
+            formatted_output += f"- Reasoning: {reasoning}\n"
             if rules:
-                formatted_output += f"- قوانین: {'; '.join(rules)}\n"
-            formatted_output += f"- خروجی مورد انتظار (JSON): {json.dumps(output, ensure_ascii=False)}\n\n"
+                formatted_output += f"- Rules: {'; '.join(rules)}\n"
+            formatted_output += f"- Expected output (JSON): {json.dumps(output, ensure_ascii=False)}\n\n"
             
         return formatted_output
         
@@ -242,16 +242,16 @@ def analyze_transaction_with_llm(text: str) -> List[Dict]:
     # Output JSON MUST use English: transaction_type exact values, field names (customer_id, details, weight_grams, etc.)
     scenarios_context = load_scenarios_context()
     
-    system_prompt = f"""تو دستیار حسابداری متخصص برای کسب‌وکار طلافروشی هستی. وظیفه‌ات تحلیل توضیحات تراکنش و تبدیل آن‌ها به طرح تراکنش‌های اتمی و ساخت‌یافته است. context (مانده‌ها، حساب‌ها) از دیتابیس به تو داده می‌شود؛ user_input همان چیزی است که کاربر می‌گوید.
+    system_prompt = f"""You are an expert accounting assistant for a gold/jewelry business. Your task is to analyze transaction descriptions and turn them into atomic, structured transaction plans. Context (balances, accounts) is provided from the database; user_input is what the user says.
 
-**زمینه کسب‌وکار:**
-- همکاران: کسانی که طلای خام به طلافروش می‌دهند (تأمین‌کننده/عمده‌فروش)
-- مشتریان: کسانی که محصول طلا یا طلای خام می‌خرند
-- طلافروش واسط است: از همکار طلا می‌خرد و به مشتری می‌فروشد
-- تراکنش‌ها می‌توانند طلا (گرم و عیار)، پول (دلار، ریال، تومان)، جنس (طلا/جواهر) باشند
-- تراکنش‌های پیچیده چند مرحله‌ای باید به ترتیب درست تفکیک شوند
+**Business context:**
+- Collaborators: those who supply raw gold to the jeweler (supplier/wholesaler)
+- Customers: those who buy gold products or raw gold
+- The jeweler is the middleman: buys from collaborators, sells to customers
+- Transactions can be gold (grams and purity), money (USD, Rial, etc.), or goods (gold/jewelry)
+- Complex multi-step transactions must be split in the correct order
 
-**انواع تراکنش (حتماً از همین مقادیر انگلیسی استفاده کن):**
+**Transaction types (use these exact English values):**
 - "Sell Raw Gold"
 - "Buy Raw Gold"
 - "Receive Money"
@@ -261,46 +261,46 @@ def analyze_transaction_with_llm(text: str) -> List[Dict]:
 - "Receive Jewelry"
 - "Give Jewelry"
 
-**ساختار هر تراکنش (خروجی JSON حتماً به انگلیسی):**
-- customer_id: عدد صحیح از context (نام اشخاص/حساب‌ها را به ID تبدیل کن)
-- transaction_type: یکی از رشته‌های دقیق بالا به انگلیسی
-- details: آبجکت با فیلدهای مشخص بر اساس نوع تراکنش (نام فیلدها به انگلیسی):
-  * برای "Sell Raw Gold" / "Buy Raw Gold": {{"purity": number, "weight_grams": float, "price": float}}
-  * برای "Receive Money" / "Send Money": {{"amount": float, "bank_account_id": int}}
-  * برای "Receive Raw Gold" / "Give Raw Gold": {{"weight_grams": float, "purity": number}}
-  * برای "Receive Jewelry" / "Give Jewelry": {{"jewelry_code": string}}
-- notes: رشتهٔ اختیاری (می‌توانی فارسی باشد)
+**Structure of each transaction (output JSON in English):**
+- customer_id: integer from context (map person/account names to ID)
+- transaction_type: one of the exact strings above in English
+- details: object with fields per transaction type (field names in English):
+  * For "Sell Raw Gold" / "Buy Raw Gold": {{"purity": number, "weight_grams": float, "price": float}}
+  * For "Receive Money" / "Send Money": {{"amount": float, "bank_account_id": int}}
+  * For "Receive Raw Gold" / "Give Raw Gold": {{"weight_grams": float, "purity": number}}
+  * For "Receive Jewelry" / "Give Jewelry": {{"jewelry_code": string}}
+- notes: optional string (may be in any language)
 
-**دستورات مهم:**
-1. نام اشخاص و حساب‌ها را از context به customer_id و bank_account_id نگاشت کن.
-2. مبالغ دقیق استخراج کن (مثلاً "۴۵ میلیون تومان" → 45000000).
-3. اگر عیار گفته نشد پیش‌فرض (مثلاً 18) بگذار.
-4. تراکنش‌های پیچیده را به مراحل اتمی پشت‌سرهم بشکن؛ خروجی نهایی فقط JSON با کلید "transactions" به انگلیسی.
-5. هرگز توضیح خارج از JSON ننویس.
+**Important rules:**
+1. Map person and account names from context to customer_id and bank_account_id.
+2. Extract amounts precisely (e.g. "45 million" → 45000000).
+3. If purity is not given, use default (e.g. 18).
+4. Break complex transactions into atomic steps; final output is JSON with key "transactions" in English only.
+5. Never write explanation outside the JSON.
 
-**قوانین مانده و بدهی:**
-سیستم ماندهٔ پول و طلای هر مشتری را خودکار محاسبه می‌کند. تراکنش جدا برای «ثبت بدهی» یا «ماندهٔ باقی‌مانده» وجود ندارد.
-- هرگز یک تراکنش که فقط «ثبت بدهی» است خروجی نده.
-- تراکنش جدا برای «باقی‌ماندهٔ بدهی» نساز؛ دوبارشمارشی می‌شود.
-- هر تراکنش باید یکی از ۸ نوع بالا باشد. "Record Debt" مجاز نیست.
+**Balance and debt rules:**
+The system automatically computes each customer's money and gold balance. There is no separate transaction for "recording debt" or "remaining balance".
+- Never output a transaction that is only "record debt".
+- Do not create a separate transaction for "remaining debt"; it would be double-counted.
+- Every transaction must be one of the 8 types above. "Record Debt" is not allowed.
 
 {scenarios_context}
 
-خروجی را فقط به صورت JSON معتبر با کلید "transactions" و مقادیر transaction_type و نام فیلدها به انگلیسی برگردان."""
+Return only valid JSON with key "transactions" and transaction_type and field names in English."""
 
-    user_prompt = f"""Context فعلی کسب‌وکار:
-مشتریان/همکاران (نام را به customer_id نگاشت کن):
+    user_prompt = f"""Current business context:
+Customers/collaborators (map name to customer_id):
 {context['customers']}
 
-حساب‌های بانکی (نام حساب مثل haspa را به bank_account_id نگاشت کن):
+Bank accounts (map account name e.g. haspa to bank_account_id):
 {context['bank_accounts']}
 
-قیمت طلا: {context['gold_price_per_gram_rial']:,.0f} ریال/گرم
+Gold price: {context['gold_price_per_gram_rial']:,.0f} Rial/gram
 
-توضیح تراکنش:
+Transaction description:
 {text}
 
-این تراکنش را تحلیل کن و یک آرایهٔ JSON ساخت‌یافته از تراکنش‌های اتمی برگردان. transaction_type و نام فیلدهای details حتماً به انگلیسی باشند."""
+Analyze this transaction and return a structured JSON array of atomic transactions. transaction_type and details field names must be in English."""
 
     try:
         response = openai_client.chat.completions.create(
@@ -333,7 +333,7 @@ def analyze_transaction_with_llm(text: str) -> List[Dict]:
         print(f"Error analyzing transaction with LLM: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"تحلیل تراکنش ناموفق بود: {str(e)}"
+            detail=f"Transaction analysis failed: {str(e)}"
         )
 
 
@@ -354,22 +354,22 @@ def generate_suggestion_with_llm(scenario: str, collaborators: List[Dict]) -> st
             detail="OpenAI API key not configured. Please set OPENAI_API_KEY in .env file."
         )
     
-    system_prompt = """تو مشاور مالی متخصص برای کسب‌وکار طلافروشی هستی. وظیفه‌ات دادن پیشنهاد هوشمند برای مدیریت رابطه با همکاران (تأمین‌کنندگان طلا) است.
+    system_prompt = """You are an expert financial advisor for a gold/jewelry business. Your task is to give smart suggestions for managing relationships with collaborators (gold suppliers).
 
-**اصول:**
-- اگر طلافروش به همکار طلا بدهکار است (ماندهٔ طلا منفی)، اولویت با پرداخت به اوست
-- اگر طلافروش به همکار پول بدهکار است (ماندهٔ ریال منفی)، اولویت با تسویه آن بدهی است
-- رابطهٔ خوب با تسویه به‌موقع بدهی‌ها حفظ می‌شود
-- همکاری که بیشتر بدهکارش هستیم برای دریافت پرداخت بعدی پیشنهاد شود
+**Principles:**
+- If the jeweler owes a collaborator gold (negative gold balance), priority is to pay them
+- If the jeweler owes a collaborator money (negative Rial balance), priority is to settle that debt
+- Good relationships are maintained by settling debts on time
+- Suggest the collaborator we owe the most for the next payment
 
-پیشنهاد را در ۱ تا ۲ جملهٔ واضح و مختصر به فارسی بده."""
+Give your suggestion in 1–2 clear, concise sentences in English."""
 
-    user_prompt = f"""سناریو: {scenario}
+    user_prompt = f"""Scenario: {scenario}
 
-همکاران و مانده‌های فعلی:
+Collaborators and current balances:
 {collaborators}
 
-بر اساس بدهی‌ها و مانده‌ها، کدام همکار برای این تراکنش در اولویت است؟ یک پیشنهاد کوتاه به فارسی بده."""
+Based on debts and balances, which collaborator should be prioritized for this transaction? Give a short suggestion in English."""
 
     try:
         response = openai_client.chat.completions.create(
@@ -387,7 +387,7 @@ def generate_suggestion_with_llm(scenario: str, collaborators: List[Dict]) -> st
         print(f"Error generating suggestion with LLM: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"دریافت پیشنهاد ناموفق بود: {str(e)}"
+            detail=f"Failed to get suggestion: {str(e)}"
         )
 
 
@@ -445,7 +445,7 @@ async def process_event(event_input: EventInput):
         return {
             "status": "plan_generated",
             "plan": plan,
-            "message": f"از توضیح شما {len(plan)} تراکنش استخراج شد."
+            "message": f"{len(plan)} transaction(s) extracted from your description."
         }
         
     except HTTPException:
@@ -575,14 +575,14 @@ async def execute_plan(execute_input: ExecutePlanInput):
         if errors:
             return {
                 "status": "partial_success" if results else "error",
-                "message": f"{len(results)} تراکنش با موفقیت اجرا شد، {len(errors)} ناموفق بود.",
+                "message": f"{len(results)} transaction(s) executed successfully, {len(errors)} failed.",
                 "results": results,
                 "errors": errors
             }
         
         return {
             "status": "success",
-            "message": f"{len(results)} تراکنش با موفقیت اجرا شد.",
+            "message": f"{len(results)} transaction(s) executed successfully.",
             "results": results
         }
         
@@ -625,7 +625,7 @@ async def get_gold_price():
         return {
             "status": "success",
             "price_per_gram_rial": price,
-            "formatted": f"{price:,.0f} ریال/گرم"
+            "formatted": f"{price:,.0f} Rial/gram"
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
