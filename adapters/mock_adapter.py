@@ -21,46 +21,38 @@ class MockAccountingAdapter(AccountingAdapter):
     def __init__(self):
         """Initialize the mock adapter with sample accounts and data."""
         self._accounts = {
-            "c1": {
-                "id": "c1",
-                "name": "Collaborator Akbari",
-                "type": "collaborator",
-                "balance": {
-                    "rial": 0,
-                    "gold_gr": -5,  # Owes 5 grams of gold
-                    "usd": 0
-                }
-            },
-            "c2": {
-                "id": "c2",
-                "name": "Collaborator Saeedi",
-                "type": "collaborator",
-                "balance": {
-                    "rial": 80_000_000,  # Has 80 million Toman
-                    "gold_gr": 8,
-                    "usd": 0
-                }
-            },
-            "u1": {
-                "id": "u1",
-                "name": "Customer Rezaei",
-                "type": "customer",
-                "balance": {
-                    "rial": 0,
-                    "gold_gr": 0,
-                    "usd": 0
-                }
-            },
-            "u2": {
-                "id": "u2",
-                "name": "Customer Mohammadi",
-                "type": "customer",
-                "balance": {
-                    "rial": -5_000_000,  # Owes 5 million Toman
-                    "gold_gr": 2,
-                    "usd": 0
-                }
-            }
+            # Collaborators (6) — gold suppliers
+            "c1": {"id": "c1", "name": "Collaborator Akbari", "type": "collaborator", "balance": {"rial": 0, "gold_gr": -5, "usd": 0}},
+            "c2": {"id": "c2", "name": "Collaborator Saeedi", "type": "collaborator", "balance": {"rial": 80_000_000, "gold_gr": 8, "usd": 0}},
+            "c3": {"id": "c3", "name": "Collaborator Zamani", "type": "collaborator", "balance": {"rial": -12_000_000, "gold_gr": -3, "usd": 0}},
+            "c4": {"id": "c4", "name": "Collaborator Talebi", "type": "collaborator", "balance": {"rial": 25_000_000, "gold_gr": 0, "usd": 0}},
+            "c5": {"id": "c5", "name": "Collaborator Hosseini", "type": "collaborator", "balance": {"rial": 0, "gold_gr": 12, "usd": 0}},
+            "c6": {"id": "c6", "name": "Collaborator Karimi", "type": "collaborator", "balance": {"rial": -8_000_000, "gold_gr": -2, "usd": 0}},
+            # Customers (24)
+            "u1": {"id": "u1", "name": "Customer Rezaei", "type": "customer", "balance": {"rial": 0, "gold_gr": 0, "usd": 0}},
+            "u2": {"id": "u2", "name": "Customer Mohammadi", "type": "customer", "balance": {"rial": -5_000_000, "gold_gr": 2, "usd": 0}},
+            "u3": {"id": "u3", "name": "Customer Ahmadi", "type": "customer", "balance": {"rial": 15_000_000, "gold_gr": 0, "usd": 0}},
+            "u4": {"id": "u4", "name": "Customer Rafiei", "type": "customer", "balance": {"rial": 0, "gold_gr": 1.5, "usd": 0}},
+            "u5": {"id": "u5", "name": "Customer Nasiri", "type": "customer", "balance": {"rial": -3_000_000, "gold_gr": 0, "usd": 0}},
+            "u6": {"id": "u6", "name": "Customer Kiani", "type": "customer", "balance": {"rial": 0, "gold_gr": 4, "usd": 0}},
+            "u7": {"id": "u7", "name": "Customer Mousavi", "type": "customer", "balance": {"rial": 22_000_000, "gold_gr": 0, "usd": 0}},
+            "u8": {"id": "u8", "name": "Customer Hashemi", "type": "customer", "balance": {"rial": 0, "gold_gr": 0, "usd": 0}},
+            "u9": {"id": "u9", "name": "Customer Jafari", "type": "customer", "balance": {"rial": -8_000_000, "gold_gr": 2.5, "usd": 0}},
+            "u10": {"id": "u10", "name": "Customer Ebrahimi", "type": "customer", "balance": {"rial": 0, "gold_gr": 0.5, "usd": 0}},
+            "u11": {"id": "u11", "name": "Customer Ghasemi", "type": "customer", "balance": {"rial": 10_000_000, "gold_gr": 0, "usd": 0}},
+            "u12": {"id": "u12", "name": "Customer Moradi", "type": "customer", "balance": {"rial": 0, "gold_gr": 3, "usd": 0}},
+            "u13": {"id": "u13", "name": "Customer Abbasi", "type": "customer", "balance": {"rial": -2_000_000, "gold_gr": 0, "usd": 0}},
+            "u14": {"id": "u14", "name": "Customer Ramezani", "type": "customer", "balance": {"rial": 0, "gold_gr": 0, "usd": 0}},
+            "u15": {"id": "u15", "name": "Customer Soleimani", "type": "customer", "balance": {"rial": 18_000_000, "gold_gr": 1, "usd": 0}},
+            "u16": {"id": "u16", "name": "Customer Mirzaei", "type": "customer", "balance": {"rial": 0, "gold_gr": 0, "usd": 0}},
+            "u17": {"id": "u17", "name": "Customer Asadi", "type": "customer", "balance": {"rial": -6_000_000, "gold_gr": 1.5, "usd": 0}},
+            "u18": {"id": "u18", "name": "Customer Nouri", "type": "customer", "balance": {"rial": 0, "gold_gr": 5, "usd": 0}},
+            "u19": {"id": "u19", "name": "Customer Kazemi", "type": "customer", "balance": {"rial": 30_000_000, "gold_gr": 0, "usd": 0}},
+            "u20": {"id": "u20", "name": "Customer Shiri", "type": "customer", "balance": {"rial": 0, "gold_gr": 2, "usd": 0}},
+            "u21": {"id": "u21", "name": "Customer Taheri", "type": "customer", "balance": {"rial": 0, "gold_gr": 0, "usd": 0}},
+            "u22": {"id": "u22", "name": "Customer Bagheri", "type": "customer", "balance": {"rial": 12_000_000, "gold_gr": 0.5, "usd": 0}},
+            "u23": {"id": "u23", "name": "Customer Yaghoubi", "type": "customer", "balance": {"rial": -4_000_000, "gold_gr": 0, "usd": 0}},
+            "u24": {"id": "u24", "name": "Customer Parsa", "type": "customer", "balance": {"rial": 0, "gold_gr": 0, "usd": 0}},
         }
         self._gold_price = 10_000_000  # 10 million Toman per gram
         self._transaction_log = []

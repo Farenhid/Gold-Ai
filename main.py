@@ -19,20 +19,27 @@ from openai import OpenAI
 import httpx
 
 from adapters.sqlalchemy_adapter import SqlAlchemyAdapter
+from adapters.mock_adapter import MockAccountingAdapter
 
 # Live gold price API (RapidAPI - gold-price-live)
 GOLD_PRICE_API_URL = "https://gold-price-live.p.rapidapi.com/get_metal_prices"
 RAPIDAPI_HOST = "gold-price-live.p.rapidapi.com"
 GRAMS_PER_OZ = 31.1035  # troy ounce to grams
-DEFAULT_GOLD_USD_PER_GRAM = 65.0  # fallback if API unavailable
+DEFAULT_GOLD_USD_PER_GRAM = 157.0  # mock/fallback USD per gram when API unavailable
 
 # Load .env from project root (same folder as this file) so the key is found
 _env_path = Path(__file__).resolve().parent / ".env"
 load_dotenv(dotenv_path=_env_path)
 
-# Initialize the accounting adapter first (used by lifespan background task)
-# Default price in USD/gram until live API updates it
-adapter = SqlAlchemyAdapter(gold_price_per_gram=DEFAULT_GOLD_USD_PER_GRAM)
+# Use mock adapter when no database is configured; otherwise use SQLAlchemy
+_database_url = os.getenv("DATABASE_URL")
+if _database_url:
+    adapter = SqlAlchemyAdapter(gold_price_per_gram=DEFAULT_GOLD_USD_PER_GRAM)
+    print("Using SqlAlchemy adapter (DATABASE_URL set).")
+else:
+    adapter = MockAccountingAdapter()
+    adapter.update_gold_price(DEFAULT_GOLD_USD_PER_GRAM)
+    print("Using Mock adapter (no DATABASE_URL). Accounts and counts are from mock data.")
 
 # Initialize OpenAI client
 openai_api_key = os.getenv("OPENAI_API_KEY")
@@ -111,10 +118,8 @@ async def gold_price_updater_task():
             adapter.update_gold_price(price)
             print(f"Gold price updated: {price:.2f} USD/gram")
         else:
-            try:
-                adapter.get_live_gold_price()
-            except Exception:
-                adapter.update_gold_price(DEFAULT_GOLD_USD_PER_GRAM)
+            adapter.update_gold_price(DEFAULT_GOLD_USD_PER_GRAM)
+            print(f"Gold price API unavailable, using mock: {DEFAULT_GOLD_USD_PER_GRAM} USD/gram")
         await asyncio.sleep(30 * 60)  # 30 minutes
 
 
