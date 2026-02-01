@@ -1176,12 +1176,14 @@
                     </p>
                     <div id="landingInterpretationOptions" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;"></div>
                     
-                    <div class="interpretation-item" style="margin-top: 16px;">
-                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                            <input type="radio" name="landingInterpretation" value="other" id="landingOptOther" onchange="toggleLandingOtherText(true)">
-                            <label for="landingOptOther" style="margin: 0; cursor: pointer;">Other (I'll write it myself)</label>
+                    <div class="interpretation-item transaction-item" style="margin-top: 12px; margin-bottom: 0;">
+                        <div style="display: flex; gap: 12px; align-items: flex-start; justify-content: flex-start;">
+                            <input type="radio" name="landingInterpretation" value="other" id="landingOptOther" onchange="toggleLandingOtherText(true)" style="margin-top: 4px; width: auto;">
+                            <div style="text-align: left; flex: 1;">
+                                <label for="landingOptOther" style="margin: 0; cursor: pointer; font-weight: 600; color: var(--text-primary); display: block;">Other (I'll write it myself)</label>
+                            </div>
                         </div>
-                        <textarea id="landingOtherText" placeholder="Describe exactly what happened..." style="display: none; min-height: 80px; margin-top: 8px;"></textarea>
+                        <textarea id="landingOtherText" placeholder="Describe exactly what happened..." style="display: none; min-height: 80px; margin-top: 12px; width: 100%; box-sizing: border-box;"></textarea>
                     </div>
 
                     <div class="button-group" style="margin-top: 24px; justify-content: center;">
@@ -1295,12 +1297,14 @@
                 </p>
                 <div id="interpretationOptions" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;"></div>
                 
-                <div class="interpretation-item" style="margin-top: 16px;">
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                        <input type="radio" name="interpretation" value="other" id="optOther" onchange="toggleOtherText(true)">
-                        <label for="optOther" style="margin: 0; cursor: pointer;">Other (I'll write it myself)</label>
+                <div class="interpretation-item transaction-item" style="margin-top: 12px; margin-bottom: 0;">
+                    <div style="display: flex; gap: 12px; align-items: flex-start; justify-content: flex-start;">
+                        <input type="radio" name="interpretation" value="other" id="optOther" onchange="toggleOtherText(true)" style="margin-top: 4px; width: auto;">
+                        <div style="text-align: left; flex: 1;">
+                            <label for="optOther" style="margin: 0; cursor: pointer; font-weight: 600; color: var(--text-primary); display: block;">Other (I'll write it myself)</label>
+                        </div>
                     </div>
-                    <textarea id="otherText" placeholder="Describe exactly what happened..." style="display: none; min-height: 80px; margin-top: 8px;"></textarea>
+                    <textarea id="otherText" placeholder="Describe exactly what happened..." style="display: none; min-height: 80px; margin-top: 12px; width: 100%; box-sizing: border-box;"></textarea>
                 </div>
 
                 <div class="button-group" style="margin-top: 24px;">
