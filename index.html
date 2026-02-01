@@ -955,8 +955,8 @@
         }
 
         .voice-orb-wrapper {
-            width: 160px;
-            height: 160px;
+            width: 240px;
+            height: 240px;
             position: relative;
             display: flex;
             align-items: center;
@@ -983,6 +983,20 @@
             justify-content: center;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 600;
+            font-size: 1.125rem;
+            color: rgba(90, 90, 100, 0.72);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.08);
+            user-select: none;
+        }
+
+        .orbit-btn-overlay::after {
+            content: 'Push to Talk';
+        }
+
+        .orbit-btn-overlay.recording::after {
+            content: 'Release to Process';
+            animation: fadeInOut 1.5s ease-in-out infinite;
         }
 
         .orbit-btn-overlay:hover {
@@ -1149,11 +1163,8 @@
             <div class="orbit-container">
                 <div id="voiceOrbContainer" class="voice-orb-wrapper">
                     <canvas id="voiceOrbCanvas"></canvas>
-                    <div id="landingRecordButton" class="orbit-btn-overlay" onclick="toggleLandingRecording()"></div>
+                    <div id="landingRecordButton" class="orbit-btn-overlay"></div>
                 </div>
-                <button class="gradient-button" id="landingRecordEventBtn" onclick="toggleLandingRecording()">
-                    Record Event
-                </button>
                 <p id="landingStatus" class="landing-status" aria-live="polite"></p>
                 <div id="landingTranscription" class="landing-transcription"></div>
 
@@ -1930,37 +1941,45 @@
             }
         }
 
-        // Toggle recording on landing page
+        // Start recording on landing page (Push to Talk)
+        async function startLandingRecording() {
+            if (isRecording) return; // Already recording
+            
+            isRecording = true;
+            finalTranscript = '';
+            document.getElementById('landingTranscription').textContent = '';
+            document.getElementById('landingStatus').textContent = 'Recording...';
+            document.getElementById('landingStatus').classList.remove('analyzing');
+            
+            // Initialize microphone for orb animation and recording
+            const micInitialized = await initMicrophone();
+            
+            if (!micInitialized) {
+                alert('Microphone access is required for voice recording.');
+                isRecording = false;
+                return;
+            }
+            
+            document.getElementById('landingRecordButton').classList.add('recording');
+        }
+
+        // Stop recording on landing page (Release Push to Talk)
+        async function stopLandingRecording() {
+            if (!isRecording) return; // Not recording
+            
+            isRecording = false;
+            stopMicrophone();
+            voiceLevel = 0;
+            document.getElementById('landingRecordButton').classList.remove('recording');
+            document.getElementById('landingStatus').textContent = 'Transcribing...';
+        }
+
+        // Toggle recording on landing page (for backwards compatibility)
         async function toggleLandingRecording() {
             if (isRecording) {
-                // Stop recording
-                isRecording = false;
-                stopMicrophone();
-                voiceLevel = 0;
-                document.getElementById('landingRecordButton').classList.remove('recording');
-                const btn = document.getElementById('landingRecordEventBtn');
-                if (btn) { btn.textContent = 'Record Event'; btn.classList.remove('recording'); }
-                document.getElementById('landingStatus').textContent = 'Transcribing...';
+                await stopLandingRecording();
             } else {
-                // Start recording
-                isRecording = true;
-                finalTranscript = '';
-                document.getElementById('landingTranscription').textContent = '';
-                document.getElementById('landingStatus').textContent = 'Recording...';
-                document.getElementById('landingStatus').classList.remove('analyzing');
-                
-                // Initialize microphone for orb animation and recording
-                const micInitialized = await initMicrophone();
-                
-                if (!micInitialized) {
-                    alert('Microphone access is required for voice recording.');
-                    isRecording = false;
-                    return;
-                }
-                
-                document.getElementById('landingRecordButton').classList.add('recording');
-                const btn = document.getElementById('landingRecordEventBtn');
-                if (btn) { btn.textContent = 'Stop Recording'; btn.classList.add('recording'); }
+                await startLandingRecording();
             }
         }
 
@@ -2700,6 +2719,41 @@
             loadAccountCounts();
             // Note: No longer using browser Web Speech API - now using MediaRecorder + OpenAI Whisper
             // initializeVoiceRecognition();
+            
+            // Setup Push-to-Talk event listeners
+            const landingRecordBtn = document.getElementById('landingRecordButton');
+            
+            // Mouse events
+            landingRecordBtn.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                startLandingRecording();
+            });
+            
+            // Touch events
+            landingRecordBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                startLandingRecording();
+            });
+            
+            // Stop recording on mouse/touch release (global listeners)
+            window.addEventListener('mouseup', () => {
+                if (isRecording && isLandingPage) {
+                    stopLandingRecording();
+                }
+            });
+            
+            window.addEventListener('touchend', () => {
+                if (isRecording && isLandingPage) {
+                    stopLandingRecording();
+                }
+            });
+            
+            // Also stop if mouse leaves the button area while holding
+            landingRecordBtn.addEventListener('mouseleave', () => {
+                if (isRecording) {
+                    stopLandingRecording();
+                }
+            });
         });
     </script>
 </body>
