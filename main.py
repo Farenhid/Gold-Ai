@@ -513,10 +513,10 @@ async def clarify_event(input_data: ClarificationInput):
 @app.post("/transcribe")
 async def transcribe_audio(file: UploadFile = File(...)):
     """
-    Transcribe audio to text using OpenAI Whisper.
+    Transcribe audio to text using OpenAI Whisper and translate to English.
     
-    Accepts audio files in various formats (webm, mp3, wav, etc.)
-    and returns transcribed text with automatic language detection.
+    Accepts audio files in various formats (webm, mp3, wav, etc.).
+    Regardless of spoken language, returns English text in the input box.
     """
     if not openai_client:
         raise HTTPException(
@@ -529,18 +529,16 @@ async def transcribe_audio(file: UploadFile = File(...)):
         audio_content = await file.read()
         
         # Create a file-like object with proper name for Whisper
-        # Whisper needs a filename with extension to determine format
         filename = file.filename or "audio.webm"
         
-        # Use OpenAI Whisper to transcribe
-        # Note: We pass the audio content directly as a tuple (filename, content)
-        transcription = openai_client.audio.transcriptions.create(
+        # Use Whisper translations API: any language -> English text
+        translation = openai_client.audio.translations.create(
             model="whisper-1",
             file=(filename, audio_content),
             response_format="text"
         )
         
-        return {"text": transcription, "success": True}
+        return {"text": translation, "success": True}
     
     except Exception as e:
         print(f"Error in transcribe_audio: {e}")
