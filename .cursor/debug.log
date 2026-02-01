@@ -1,0 +1,8 @@
+{"sessionId": "debug-session", "runId": "run1", "hypothesisId": "H1", "location": "main.py", "message": "Checking API key from env", "data": {"key_exists": true, "key_length": 164}, "timestamp": 1769943502840}
+{"sessionId": "debug-session", "runId": "run1", "hypothesisId": "H2", "location": "main.py", "message": "Attempting OpenAI client initialization with direct instantiation", "data": null, "timestamp": 1769943502841}
+{"sessionId": "debug-session", "runId": "run1", "hypothesisId": "H2", "location": "main.py", "message": "OpenAI client initialized successfully", "data": null, "timestamp": 1769943502871}
+{"sessionId": "debug-session", "runId": "run1", "hypothesisId": "H3", "location": "main.py", "message": "Transcription endpoint hit", "data": {"filename": "recording.webm", "client_exists": true}, "timestamp": 1769943533340}
+{"sessionId": "debug-session", "runId": "run1", "hypothesisId": "H3", "location": "main.py", "message": "Transcription endpoint hit", "data": {"filename": "recording.webm", "client_exists": true}, "timestamp": 1769943574609}
+{"sessionId": "debug-session", "runId": "run1", "hypothesisId": "H1", "location": "main.py", "message": "Checking API key from env", "data": {"key_exists": true, "key_length": 164}, "timestamp": 1769943610112}
+{"sessionId": "debug-session", "runId": "run1", "hypothesisId": "H2", "location": "main.py", "message": "Attempting OpenAI client initialization with direct instantiation", "data": null, "timestamp": 1769943610113}
+{"sessionId": "debug-session", "runId": "run1", "hypothesisId": "H2", "location": "main.py", "message": "OpenAI client initialized successfully", "data": null, "timestamp": 1769943610132}

@@ -1311,6 +1311,11 @@
         let finalTranscript = '';
         let isLandingPage = true;
 
+        // MediaRecorder variables for audio capture
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let recordedAudioBlob = null;
+
         // WebGL Orb variables
         let orbRenderer = null;
         let orbProgram = null;
@@ -1732,7 +1737,39 @@
                 // Start analyzing audio
                 analyzeAudio();
 
-                console.log('Microphone initialized for orb animation');
+                // Initialize MediaRecorder for audio capture
+                audioChunks = [];
+                recordedAudioBlob = null;
+                
+                try {
+                    // Use the same mediaStream for MediaRecorder
+                    mediaRecorder = new MediaRecorder(mediaStream, {
+                        mimeType: 'audio/webm;codecs=opus'
+                    });
+                    
+                    mediaRecorder.ondataavailable = (event) => {
+                        if (event.data.size > 0) {
+                            audioChunks.push(event.data);
+                        }
+                    };
+                    
+                    mediaRecorder.onstop = async () => {
+                        // Create blob from recorded chunks
+                        recordedAudioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        console.log('Audio recording stopped, blob size:', recordedAudioBlob.size);
+                        
+                        // Transcribe the audio using Whisper API
+                        await transcribeAudioWithWhisper(recordedAudioBlob);
+                    };
+                    
+                    // Start recording
+                    mediaRecorder.start();
+                    console.log('MediaRecorder started');
+                } catch (error) {
+                    console.warn('MediaRecorder initialization failed:', error);
+                }
+
+                console.log('Microphone initialized for orb animation and recording');
                 return true;
             } catch (error) {
                 console.warn('Microphone access denied:', error);
@@ -1743,6 +1780,11 @@
         // Stop microphone
         function stopMicrophone() {
             try {
+                // Stop MediaRecorder first
+                if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                    mediaRecorder.stop();
+                }
+                
                 if (mediaStream) {
                     mediaStream.getTracks().forEach(track => track.stop());
                     mediaStream = null;
@@ -1765,9 +1807,67 @@
 
                 dataArray = null;
                 voiceLevel = 0;
-                console.log('Microphone stopped');
+                console.log('Microphone and recorder stopped');
             } catch (error) {
                 console.warn('Error stopping microphone:', error);
+            }
+        }
+
+        // Transcribe audio using OpenAI Whisper API
+        async function transcribeAudioWithWhisper(audioBlob) {
+            try {
+                // Update UI to show transcription in progress
+                if (isLandingPage) {
+                    document.getElementById('landingStatus').textContent = 'Transcribing...';
+                    document.getElementById('landingStatus').classList.add('analyzing');
+                } else {
+                    document.getElementById('recordingStatus').textContent = 'Transcribing...';
+                }
+
+                // Prepare form data with audio file
+                const formData = new FormData();
+                formData.append('file', audioBlob, 'recording.webm');
+
+                // Send to backend /transcribe endpoint
+                const response = await fetch('/transcribe', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Transcription failed: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.success && data.text) {
+                    // Set the transcript
+                    finalTranscript = data.text;
+                    console.log('Transcription received:', finalTranscript);
+
+                    // Display the transcription
+                    if (isLandingPage) {
+                        document.getElementById('landingTranscription').textContent = finalTranscript;
+                        document.getElementById('landingStatus').textContent = 'Processing...';
+                        // Auto-analyze after transcription on landing page
+                        setTimeout(() => analyzeLandingRecording(), 500);
+                    } else {
+                        document.getElementById('transcriptionPreview').textContent = finalTranscript;
+                        document.getElementById('recordingStatus').textContent = 'Transcription complete. Ready to analyze.';
+                    }
+                } else {
+                    throw new Error('No transcription text received');
+                }
+
+            } catch (error) {
+                console.error('Error transcribing audio:', error);
+                
+                if (isLandingPage) {
+                    document.getElementById('landingStatus').textContent = 'Transcription failed. Please try again.';
+                    document.getElementById('landingStatus').classList.remove('analyzing');
+                } else {
+                    document.getElementById('recordingStatus').textContent = 'Transcription failed. Please try again.';
+                }
             }
         }
 
@@ -1795,31 +1895,35 @@
 
         // Toggle recording on landing page
         async function toggleLandingRecording() {
-            if (!recognition) {
-                alert('Voice recognition is not available in your browser.');
-                return;
-            }
-
             if (isRecording) {
-                recognition.stop();
+                // Stop recording
+                isRecording = false;
                 stopMicrophone();
                 voiceLevel = 0;
                 document.getElementById('landingRecordButton').classList.remove('recording');
                 const btn = document.getElementById('landingRecordEventBtn');
                 if (btn) { btn.textContent = 'Record Event'; btn.classList.remove('recording'); }
+                document.getElementById('landingStatus').textContent = 'Transcribing...';
             } else {
+                // Start recording
+                isRecording = true;
                 finalTranscript = '';
                 document.getElementById('landingTranscription').textContent = '';
-                document.getElementById('landingStatus').textContent = '';
+                document.getElementById('landingStatus').textContent = 'Recording...';
                 document.getElementById('landingStatus').classList.remove('analyzing');
                 
-                // Initialize microphone for orb animation
-                await initMicrophone();
+                // Initialize microphone for orb animation and recording
+                const micInitialized = await initMicrophone();
+                
+                if (!micInitialized) {
+                    alert('Microphone access is required for voice recording.');
+                    isRecording = false;
+                    return;
+                }
                 
                 document.getElementById('landingRecordButton').classList.add('recording');
                 const btn = document.getElementById('landingRecordEventBtn');
                 if (btn) { btn.textContent = 'Stop Recording'; btn.classList.add('recording'); }
-                recognition.start();
             }
         }
 
@@ -1886,18 +1990,33 @@
         }
 
         // Toggle recording on/off
-        function toggleRecording() {
-            if (!recognition) {
-                alert('Voice recognition is not available in your browser.');
-                return;
-            }
-
+        async function toggleRecording() {
             if (isRecording) {
-                recognition.stop();
+                // Stop recording
+                isRecording = false;
+                stopMicrophone();
+                voiceLevel = 0;
+                document.getElementById('recordButton').classList.remove('recording');
+                document.getElementById('recordingStatus').textContent = 'Transcribing...';
             } else {
+                // Start recording
+                isRecording = true;
                 finalTranscript = '';
                 document.getElementById('transcriptionPreview').textContent = '';
-                recognition.start();
+                document.getElementById('recordingStatus').textContent = 'Recording...';
+                
+                // Initialize microphone for recording
+                const micInitialized = await initMicrophone();
+                
+                if (!micInitialized) {
+                    alert('Microphone access is required for voice recording.');
+                    isRecording = false;
+                    return;
+                }
+                
+                document.getElementById('recordButton').classList.add('recording');
+                document.getElementById('recordingStatus').textContent = 'Recording... (tap to stop)';
+                document.getElementById('recordingStatus').classList.add('recording');
             }
         }
 
@@ -1917,8 +2036,9 @@
                 voiceSection.classList.remove('active');
                 
                 // Stop recording if switching away from voice tab
-                if (isRecording && recognition) {
-                    recognition.stop();
+                if (isRecording) {
+                    stopMicrophone();
+                    isRecording = false;
                 }
             } else if (tabName === 'voice') {
                 textSection.classList.remove('active');
@@ -2383,7 +2503,8 @@
             // initializeWebGLOrb will be called after OGL loads (see module script in head)
             loadGoldPrice();
             loadAccountCounts();
-            initializeVoiceRecognition();
+            // Note: No longer using browser Web Speech API - now using MediaRecorder + OpenAI Whisper
+            // initializeVoiceRecognition();
         });
     </script>
 </body>

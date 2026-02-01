@@ -5,7 +5,7 @@ This middleware translates conversational transaction descriptions
 into structured API calls using OpenAI's language models.
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, File, UploadFile
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
@@ -415,6 +415,43 @@ async def clarify_event(input_data: ClarificationInput):
     except Exception as e:
         print(f"Error in clarify_event: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/transcribe")
+async def transcribe_audio(file: UploadFile = File(...)):
+    """
+    Transcribe audio to text using OpenAI Whisper.
+    
+    Accepts audio files in various formats (webm, mp3, wav, etc.)
+    and returns transcribed text with automatic language detection.
+    """
+    if not openai_client:
+        raise HTTPException(
+            status_code=503,
+            detail="OpenAI client not initialized. Please check OPENAI_API_KEY."
+        )
+    
+    try:
+        # Read the uploaded file content
+        audio_content = await file.read()
+        
+        # Create a file-like object with proper name for Whisper
+        # Whisper needs a filename with extension to determine format
+        filename = file.filename or "audio.webm"
+        
+        # Use OpenAI Whisper to transcribe
+        # Note: We pass the audio content directly as a tuple (filename, content)
+        transcription = openai_client.audio.transcriptions.create(
+            model="whisper-1",
+            file=(filename, audio_content),
+            response_format="text"
+        )
+        
+        return {"text": transcription, "success": True}
+    
+    except Exception as e:
+        print(f"Error in transcribe_audio: {e}")
+        raise HTTPException(status_code=500, detail=f"Transcription failed: {str(e)}")
 
 
 @app.post("/process-event")
