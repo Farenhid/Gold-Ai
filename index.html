@@ -566,6 +566,16 @@
             cursor: not-allowed;
         }
 
+        .gradient-button.recording {
+            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        .gradient-button.recording:hover {
+            background: linear-gradient(135deg, #F87171 0%, #EF4444 100%);
+            box-shadow: 0 6px 24px rgba(239, 68, 68, 0.5);
+        }
+
         .gradient-button-small {
             padding: 12px 24px;
             font-size: 0.9375rem;
@@ -945,8 +955,8 @@
         }
 
         .voice-orb-wrapper {
-            width: 320px;
-            height: 320px;
+            width: 160px;
+            height: 160px;
             position: relative;
             display: flex;
             align-items: center;
@@ -983,26 +993,6 @@
             transform: scale(0.98);
         }
 
-        .orbit-mic {
-            font-size: 5rem;
-            user-select: none;
-            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
-            transition: all 0.3s ease;
-        }
-
-        .orbit-btn-overlay.recording .orbit-mic {
-            animation: micPulse 1.5s ease-in-out infinite;
-        }
-
-        @keyframes micPulse {
-            0%, 100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.1);
-            }
-        }
-
         .landing-status {
             font-size: 1.25rem;
             font-weight: 600;
@@ -1021,32 +1011,34 @@
         }
 
         .landing-transcription {
-            min-height: 120px;
-            max-width: 600px;
+            min-height: 52px;
+            max-width: 560px;
             width: 100%;
+            margin-top: 28px;
+            margin-bottom: 8px;
             background: var(--surface);
-            border: 2px solid var(--border);
-            border-radius: 16px;
-            padding: 24px;
-            font-size: 1.125rem;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 24px;
+            font-size: 1rem;
             color: var(--text-primary);
-            line-height: 1.8;
+            line-height: 1.6;
             text-align: center;
-            transition: all 0.3s ease;
-            box-shadow: var(--shadow-md);
+            transition: all 0.25s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
         }
 
         .landing-transcription:not(:empty) {
             border-color: var(--primary);
             background: var(--bg-white);
-            box-shadow: var(--shadow-blue);
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.12);
         }
 
         .landing-transcription:empty::before {
             content: 'Your words will appear here...';
             color: var(--text-tertiary);
             font-style: italic;
-            font-size: 1rem;
+            font-size: 0.9375rem;
         }
 
         .subtle-switch-btn {
@@ -1115,12 +1107,8 @@
             }
 
             .voice-orb-wrapper {
-                width: 240px;
-                height: 240px;
-            }
-
-            .orbit-mic {
-                font-size: 4rem;
+                width: 120px;
+                height: 120px;
             }
 
             .landing-status {
@@ -1128,8 +1116,10 @@
             }
 
             .landing-transcription {
-                font-size: 1rem;
-                padding: 20px;
+                font-size: 0.9375rem;
+                padding: 12px 20px;
+                margin-top: 24px;
+                max-width: 100%;
             }
         }
     </style>
@@ -1147,11 +1137,12 @@
             <div class="orbit-container">
                 <div id="voiceOrbContainer" class="voice-orb-wrapper">
                     <canvas id="voiceOrbCanvas"></canvas>
-                    <div id="landingRecordButton" class="orbit-btn-overlay" onclick="toggleLandingRecording()">
-                        <div class="orbit-mic">🎤</div>
-                    </div>
+                    <div id="landingRecordButton" class="orbit-btn-overlay" onclick="toggleLandingRecording()"></div>
                 </div>
-                <p id="landingStatus" class="landing-status">Tap to record your transaction</p>
+                <button class="gradient-button" id="landingRecordEventBtn" onclick="toggleLandingRecording()">
+                    Record Event
+                </button>
+                <p id="landingStatus" class="landing-status" aria-live="polite"></p>
                 <div id="landingTranscription" class="landing-transcription"></div>
             </div>
             <button class="subtle-switch-btn" onclick="showDashboard()">
@@ -1607,6 +1598,8 @@
                 
                 if (isLandingPage) {
                     document.getElementById('landingRecordButton').classList.add('recording');
+                    const btn = document.getElementById('landingRecordEventBtn');
+                    if (btn) { btn.textContent = 'Stop Recording'; btn.classList.add('recording'); }
                     document.getElementById('landingStatus').textContent = 'Recording... (tap to stop)';
                     document.getElementById('landingStatus').classList.add('recording');
                 } else {
@@ -1645,6 +1638,8 @@
                 
                 if (isLandingPage) {
                     document.getElementById('landingRecordButton').classList.remove('recording');
+                    const btn = document.getElementById('landingRecordEventBtn');
+                    if (btn) { btn.textContent = 'Record Event'; btn.classList.remove('recording'); }
                     document.getElementById('landingStatus').classList.remove('recording');
                     
                     if (event.error === 'no-speech') {
@@ -1676,6 +1671,8 @@
                 
                 if (isLandingPage) {
                     document.getElementById('landingRecordButton').classList.remove('recording');
+                    const btn = document.getElementById('landingRecordEventBtn');
+                    if (btn) { btn.textContent = 'Record Event'; btn.classList.remove('recording'); }
                     document.getElementById('landingStatus').classList.remove('recording');
                     
                     if (finalTranscript.trim()) {
@@ -1684,7 +1681,7 @@
                         // Auto-analyze after recording on landing page
                         setTimeout(() => analyzeLandingRecording(), 500);
                     } else {
-                        document.getElementById('landingStatus').textContent = 'Tap to record your transaction';
+                        document.getElementById('landingStatus').textContent = '';
                     }
                 } else {
                     document.getElementById('recordButton').classList.remove('recording');
@@ -1808,15 +1805,20 @@
                 stopMicrophone();
                 voiceLevel = 0;
                 document.getElementById('landingRecordButton').classList.remove('recording');
+                const btn = document.getElementById('landingRecordEventBtn');
+                if (btn) { btn.textContent = 'Record Event'; btn.classList.remove('recording'); }
             } else {
                 finalTranscript = '';
                 document.getElementById('landingTranscription').textContent = '';
+                document.getElementById('landingStatus').textContent = '';
                 document.getElementById('landingStatus').classList.remove('analyzing');
                 
                 // Initialize microphone for orb animation
                 await initMicrophone();
                 
                 document.getElementById('landingRecordButton').classList.add('recording');
+                const btn = document.getElementById('landingRecordEventBtn');
+                if (btn) { btn.textContent = 'Stop Recording'; btn.classList.add('recording'); }
                 recognition.start();
             }
         }
@@ -1873,9 +1875,11 @@
             // Reset landing page state
             finalTranscript = '';
             document.getElementById('landingTranscription').textContent = '';
-            document.getElementById('landingStatus').textContent = 'Tap to record your transaction';
+            document.getElementById('landingStatus').textContent = '';
             document.getElementById('landingStatus').classList.remove('analyzing', 'recording');
             document.getElementById('landingRecordButton').classList.remove('recording');
+            const btn = document.getElementById('landingRecordEventBtn');
+            if (btn) { btn.textContent = 'Record Event'; btn.classList.remove('recording'); }
             
             // Hide all cards
             hideAllCards();
